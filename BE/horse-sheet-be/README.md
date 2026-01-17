@@ -23,12 +23,168 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+HorseSheet Backend API - A NestJS-based stable management system API.
+
+This API provides full CRUD operations for managing stables, instructors, activities, services, participants, contact persons, price lists, and schedule entries.
+
+## Features
+
+- ✅ Full CRUD operations for all entities
+- ✅ Soft deletion support for all entities
+- ✅ Optimistic locking for concurrent edit protection
+- ✅ Public read-only endpoints (stables, activities, services, schedule entries)
+- ✅ Authentication-ready architecture (Bearer token support)
+- ✅ Swagger/OpenAPI documentation
+- ✅ Global exception handling and validation
+- ✅ Health check endpoint
+
+## Quick Start
+
+1. **Install dependencies:**
+   ```bash
+   yarn install
+   ```
+
+2. **Start the database:**
+   ```bash
+   yarn db:up
+   # or: docker-compose up -d
+   ```
+
+3. **Create `.env` file** (copy from `.env.example` and adjust if needed):
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Start the development server:**
+   ```bash
+   yarn start:dev
+   ```
+
+5. **Access the API:**
+   - API: http://localhost:3000/api
+   - Swagger Docs: http://localhost:3000/api/docs
+   - Health Check: http://localhost:3000/api/health
 
 ## Project setup
 
+### Prerequisites
+
+- Node.js 18+ 
+- Docker and Docker Compose (for database) OR PostgreSQL 15+ installed locally
+- Yarn package manager
+
+### Installation
+
 ```bash
 $ yarn install
+```
+
+### Database Setup
+
+#### Option 1: Using Docker Compose (Recommended)
+
+The easiest way to set up the database for local development is using Docker Compose:
+
+1. **Start the PostgreSQL container:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Verify the database is running:**
+   ```bash
+   docker-compose ps
+   ```
+
+3. **View database logs (optional):**
+   ```bash
+   docker-compose logs -f postgres
+   ```
+
+4. **Stop the database (when done):**
+   ```bash
+   docker-compose down
+   ```
+
+5. **Stop and remove all data (clean slate):**
+   ```bash
+   docker-compose down -v
+   ```
+
+The database will be available at `localhost:5433` with:
+- **User:** `horsesheet`
+- **Password:** `horsesheet_dev`
+- **Database:** `horsesheet`
+
+> **Note:** Port 5433 is used instead of 5432 to avoid conflicts with local PostgreSQL installations.
+
+#### Option 2: Local PostgreSQL Installation
+
+If you prefer to use a local PostgreSQL installation:
+
+1. Install PostgreSQL 15+ on your system
+2. Create a database:
+   ```sql
+   CREATE DATABASE horsesheet;
+   CREATE USER horsesheet WITH PASSWORD 'your_password';
+   GRANT ALL PRIVILEGES ON DATABASE horsesheet TO horsesheet;
+   ```
+
+### Environment Configuration
+
+Create a `.env` file in the root directory:
+
+**For Docker Compose setup:**
+```env
+# Application
+NODE_ENV=development
+PORT=3000
+CORS_ORIGIN=*
+
+# Database (Docker Compose)
+DATABASE_URL=postgresql://horsesheet:horsesheet_dev@localhost:5433/horsesheet
+DATABASE_SSL=false
+
+# JWT (future use)
+JWT_SECRET=your-secret-key-here-change-in-production
+```
+
+**For local PostgreSQL setup:**
+```env
+# Application
+NODE_ENV=development
+PORT=3000
+CORS_ORIGIN=*
+
+# Database (Local PostgreSQL)
+DATABASE_URL=postgresql://user:password@localhost:5432/horsesheet
+DATABASE_SSL=false
+
+# JWT (future use)
+JWT_SECRET=your-secret-key-here-change-in-production
+```
+
+> **Note:** The application will automatically synchronize the schema in development mode (`NODE_ENV=development`).
+
+### Database Management Scripts
+
+The following npm/yarn scripts are available for database management:
+
+```bash
+# Start the database
+yarn db:up
+
+# Stop the database
+yarn db:down
+
+# View database logs
+yarn db:logs
+
+# Reset database (removes all data and recreates)
+yarn db:reset
+
+# Connect to database via psql
+yarn db:psql
 ```
 
 ## Compile and run the project
@@ -37,12 +193,41 @@ $ yarn install
 # development
 $ yarn run start
 
-# watch mode
+# watch mode (recommended for development)
 $ yarn run start:dev
 
 # production mode
 $ yarn run start:prod
 ```
+
+## API Documentation
+
+Once the application is running, access Swagger documentation at:
+- **Swagger UI**: http://localhost:3000/api/docs
+
+## API Endpoints
+
+### Public Endpoints (No Authentication Required)
+- `GET /api/stables/:id` - Get stable details
+- `GET /api/activities` - List all activities
+- `GET /api/services` - List all services
+- `GET /api/schedule-entries` - List schedule entries (with filters)
+
+### Authenticated Endpoints (Architecture Ready)
+All other endpoints accept optional Bearer token (not enforced in MVP):
+- Stable management: `POST`, `PATCH`, `DELETE /api/stables`
+- Instructor management: `GET`, `POST`, `PATCH`, `DELETE /api/instructors`
+- Activity management: `POST`, `PATCH`, `DELETE /api/activities`
+- Service management: `POST`, `PATCH`, `DELETE /api/services`
+- Participant management: `GET`, `POST`, `PATCH`, `DELETE /api/participants`
+- Contact person management: `GET`, `POST`, `PATCH`, `DELETE /api/contact-persons`
+- Price list management: `GET`, `POST`, `PATCH`, `DELETE /api/price-lists`
+- Schedule entry management: `GET`, `POST`, `PATCH`, `DELETE /api/schedule-entries`
+- Schedule export: `GET /api/schedule-entries/export`
+- Schedule duplicate: `POST /api/schedule-entries/:id/duplicate`
+
+### Health Check
+- `GET /api/health` - Health check endpoint
 
 ## Run tests
 
