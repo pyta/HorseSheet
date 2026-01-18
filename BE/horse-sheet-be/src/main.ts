@@ -58,8 +58,13 @@ async function bootstrap() {
     .addTag('services', 'Service management')
     .addTag('participants', 'Participant management')
     .addTag('contact-persons', 'Contact person management')
-    .addTag('price-lists', 'Price list management')
-    .addTag('schedule-entries', 'Schedule entry management')
+    .addTag('service-price-lists', 'Service price list management')
+    .addTag('activity-price-lists', 'Activity price list management')
+    .addTag('activity-schedule-entries', 'Activity schedule entry management')
+    .addTag('service-schedule-entries', 'Service schedule entry management')
+    .addTag('individual-service-price-lists', 'Individual service price list management')
+    .addTag('individual-activity-price-lists', 'Individual activity price list management')
+    .addTag('payments', 'Payment management')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

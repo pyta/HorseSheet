@@ -11,8 +11,13 @@ import { ActivityModule } from './activity/activity.module';
 import { ServiceModule } from './service/service.module';
 import { ParticipantModule } from './participant/participant.module';
 import { ContactPersonModule } from './contact-person/contact-person.module';
-import { PriceListModule } from './price-list/price-list.module';
-import { ScheduleEntryModule } from './schedule-entry/schedule-entry.module';
+import { ServicePriceListModule } from './service-price-list/service-price-list.module';
+import { ActivityPriceListModule } from './activity-price-list/activity-price-list.module';
+import { ActivityScheduleEntryModule } from './activity-schedule-entry/activity-schedule-entry.module';
+import { ServiceScheduleEntryModule } from './service-schedule-entry/service-schedule-entry.module';
+import { IndividualServicePriceListModule } from './individual-service-price-list/individual-service-price-list.module';
+import { IndividualActivityPriceListModule } from './individual-activity-price-list/individual-activity-price-list.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -31,8 +36,13 @@ import { ScheduleEntryModule } from './schedule-entry/schedule-entry.module';
     ServiceModule,
     ParticipantModule,
     ContactPersonModule,
-    PriceListModule,
-    ScheduleEntryModule,
+    ServicePriceListModule,
+    ActivityPriceListModule,
+    ActivityScheduleEntryModule,
+    ServiceScheduleEntryModule,
+    IndividualServicePriceListModule,
+    IndividualActivityPriceListModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
