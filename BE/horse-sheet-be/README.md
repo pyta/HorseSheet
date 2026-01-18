@@ -187,6 +187,91 @@ yarn db:reset
 yarn db:psql
 ```
 
+### Database Migrations
+
+The project uses TypeORM migrations for database schema versioning. Migrations allow you to version control your database schema and apply changes in a controlled manner.
+
+#### Important Notes
+
+- **In development**: By default, `synchronize` is disabled. You should use migrations instead of `synchronize` for better control.
+- **In production**: Always use migrations. Never use `synchronize: true` in production.
+
+#### Migration Scripts
+
+```bash
+# Generate a new migration based on entity changes
+yarn migration:generate src/migrations/MigrationName
+
+# Create an empty migration file
+yarn migration:create src/migrations/MigrationName
+
+# Run pending migrations
+yarn migration:run
+
+# Revert the last migration
+yarn migration:revert
+
+# Show migration status
+yarn migration:show
+```
+
+#### Creating Your First Migration
+
+1. **Generate a migration from your entities** (recommended):
+   ```bash
+   yarn migration:generate src/migrations/InitialSchema
+   ```
+   This will analyze your entities and create a migration file with all the necessary changes.
+
+2. **Or create an empty migration** (for manual SQL):
+   ```bash
+   yarn migration:create src/migrations/AddNewColumn
+   ```
+   Then edit the generated file in `src/migrations/` to add your SQL changes.
+
+3. **Review the generated migration file** in `src/migrations/` to ensure it's correct.
+
+4. **Run the migration**:
+   ```bash
+   yarn migration:run
+   ```
+
+#### Migration File Structure
+
+Migration files are automatically generated in `src/migrations/` with timestamps. Example:
+
+```typescript
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+export class InitialSchema1234567890 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Migration code here
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Rollback code here
+  }
+}
+```
+
+#### Environment Configuration for Migrations
+
+To disable `synchronize` and use migrations only, set in your `.env`:
+
+```env
+DB_SYNCHRONIZE=false
+```
+
+Or remove `DB_SYNCHRONIZE` from your `.env` (it defaults to `false`).
+
+#### Best Practices
+
+- Always review generated migrations before running them
+- Test migrations on a development database first
+- Commit migration files to version control
+- Never edit existing migrations that have been run in production
+- Create new migrations for schema changes instead of modifying old ones
+
 ## Compile and run the project
 
 ```bash

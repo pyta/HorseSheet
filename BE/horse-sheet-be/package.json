@@ -22,7 +22,12 @@
     "db:down": "docker-compose down",
     "db:logs": "docker-compose logs -f postgres",
     "db:reset": "docker-compose down -v && docker-compose up -d",
-    "db:psql": "docker-compose exec postgres psql -U horsesheet -d horsesheet"
+    "db:psql": "docker-compose exec postgres psql -U horsesheet -d horsesheet",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/config/data-source.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/config/data-source.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/config/data-source.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
