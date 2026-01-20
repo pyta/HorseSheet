@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
+import ScheduleCalendar from '@/components/schedule/ScheduleCalendar.vue';
 
 const quickLinks = [
   { name: 'Stables', path: '/admin/stables', icon: '🏠' },
@@ -30,6 +31,10 @@ const quickLinks = [
           <span class="link-name">{{ link.name }}</span>
         </RouterLink>
       </div>
+    </div>
+
+    <div class="schedule-section">
+      <ScheduleCalendar />
     </div>
   </div>
 </template>
@@ -89,5 +94,9 @@ const quickLinks = [
 .link-name {
   font-size: 1rem;
   font-weight: 500;
+}
+
+.schedule-section {
+  margin-top: 3rem;
 }
 </style>
