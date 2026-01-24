@@ -10,7 +10,8 @@ import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Stable } from '../stable/entities/stable.entity';
-import { Participant } from '../participant/entities/participant.entity';
+import { ContactPerson } from '../contact-person/entities/contact-person.entity';
+import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class PaymentService {
@@ -19,8 +20,9 @@ export class PaymentService {
     private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(Stable)
     private readonly stableRepository: Repository<Stable>,
-    @InjectRepository(Participant)
-    private readonly participantRepository: Repository<Participant>,
+    @InjectRepository(ContactPerson)
+    private readonly contactPersonRepository: Repository<ContactPerson>,
+    private readonly queueService: QueueService,
   ) {}
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
@@ -35,18 +37,18 @@ export class PaymentService {
       );
     }
 
-    // Validate participant exists and is active
-    const participant = await this.participantRepository.findOne({
+    // Validate contact person exists and is active
+    const contactPerson = await this.contactPersonRepository.findOne({
       where: {
-        id: createPaymentDto.participantId,
+        id: createPaymentDto.contactPersonId,
         deletedAt: IsNull(),
         isActive: true,
       },
     });
 
-    if (!participant) {
+    if (!contactPerson) {
       throw new BadRequestException(
-        `Participant with ID ${createPaymentDto.participantId} not found or inactive`,
+        `Contact person with ID ${createPaymentDto.contactPersonId} not found or inactive`,
       );
     }
 
@@ -54,13 +56,22 @@ export class PaymentService {
       ...createPaymentDto,
       paymentDate: new Date(createPaymentDto.paymentDate),
     });
-    return await this.paymentRepository.save(payment);
+    
+    const savedPayment = await this.paymentRepository.save(payment);
+
+    // Add balance update message to queue
+    await this.queueService.addBalanceUpdate({
+      value: savedPayment.amount,
+      contactPersonId: savedPayment.contactPersonId,
+    });
+
+    return savedPayment;
   }
 
   async findAll(): Promise<Payment[]> {
     return await this.paymentRepository.find({
       where: { deletedAt: IsNull() },
-      relations: ['stable', 'participant'],
+      relations: ['stable', 'contactPerson'],
       order: { paymentDate: 'DESC', createdAt: 'DESC' },
     });
   }
@@ -68,7 +79,7 @@ export class PaymentService {
   async findOne(id: string): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['stable', 'participant'],
+      relations: ['stable', 'contactPerson'],
     });
 
     if (!payment) {
@@ -91,22 +102,26 @@ export class PaymentService {
       );
     }
 
-    // Validate participant if updating
-    if (updatePaymentDto.participantId) {
-      const participant = await this.participantRepository.findOne({
+    // Validate contact person if updating
+    if (updatePaymentDto.contactPersonId) {
+      const contactPerson = await this.contactPersonRepository.findOne({
         where: {
-          id: updatePaymentDto.participantId,
+          id: updatePaymentDto.contactPersonId,
           deletedAt: IsNull(),
           isActive: true,
         },
       });
 
-      if (!participant) {
+      if (!contactPerson) {
         throw new BadRequestException(
-          `Participant with ID ${updatePaymentDto.participantId} not found or inactive`,
+          `Contact person with ID ${updatePaymentDto.contactPersonId} not found or inactive`,
         );
       }
     }
+
+    // Track old amount for balance calculation
+    const oldAmount = payment.amount;
+    const oldContactPersonId = payment.contactPersonId;
 
     // Update fields
     if (updatePaymentDto.paymentDate) {
@@ -115,18 +130,46 @@ export class PaymentService {
     if (updatePaymentDto.amount !== undefined) {
       payment.amount = updatePaymentDto.amount;
     }
-    if (updatePaymentDto.balance !== undefined) {
-      payment.balance = updatePaymentDto.balance;
-    }
-    if (updatePaymentDto.participantId) {
-      payment.participantId = updatePaymentDto.participantId;
+    if (updatePaymentDto.contactPersonId) {
+      payment.contactPersonId = updatePaymentDto.contactPersonId;
     }
 
-    return await this.paymentRepository.save(payment);
+    const savedPayment = await this.paymentRepository.save(payment);
+
+    // Add balance update messages to queue
+    if (updatePaymentDto.amount !== undefined || updatePaymentDto.contactPersonId) {
+      // If contact person changed, subtract from old and add to new
+      if (updatePaymentDto.contactPersonId && updatePaymentDto.contactPersonId !== oldContactPersonId) {
+        await this.queueService.addBalanceUpdate({
+          value: -oldAmount,
+          contactPersonId: oldContactPersonId,
+        });
+
+        await this.queueService.addBalanceUpdate({
+          value: savedPayment.amount,
+          contactPersonId: savedPayment.contactPersonId,
+        });
+      } else {
+        // Same contact person, just update amount difference
+        const amountDifference = savedPayment.amount - oldAmount;
+        await this.queueService.addBalanceUpdate({
+          value: amountDifference,
+          contactPersonId: savedPayment.contactPersonId,
+        });
+      }
+    }
+
+    return savedPayment;
   }
 
   async remove(id: string): Promise<void> {
     const payment = await this.findOne(id);
+    
+    await this.queueService.addBalanceUpdate({
+      value: -payment.amount,
+      contactPersonId: payment.contactPersonId,
+    });
+
     await this.paymentRepository.softRemove(payment);
   }
 }

@@ -8,6 +8,8 @@ import { Stable } from '../stable/entities/stable.entity';
 import { Instructor } from '../instructor/entities/instructor.entity';
 import { Activity } from '../activity/entities/activity.entity';
 import { Participant } from '../participant/entities/participant.entity';
+import { QueueModule } from '../queue/queue.module';
+import { BalanceModule } from '../balance/balance.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { Participant } from '../participant/entities/participant.entity';
       Activity,
       Participant,
     ]),
+    QueueModule,
+    BalanceModule,
   ],
   controllers: [ActivityScheduleEntryController],
   providers: [ActivityScheduleEntryService],

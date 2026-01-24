@@ -7,6 +7,7 @@ import { Stable } from '../stable/entities/stable.entity';
 import { Activity } from '../activity/entities/activity.entity';
 import { Instructor } from '../instructor/entities/instructor.entity';
 import { Participant } from '../participant/entities/participant.entity';
+import { IndividualActivityPriceListHistory } from '../individual-activity-price-list-history/entities/individual-activity-price-list-history.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Participant } from '../participant/entities/participant.entity';
       Activity,
       Instructor,
       Participant,
+      IndividualActivityPriceListHistory,
     ]),
   ],
   controllers: [IndividualActivityPriceListController],

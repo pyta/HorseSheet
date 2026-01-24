@@ -10,6 +10,7 @@ const quickLinks = [
   { name: 'Service Schedule', path: '/admin/service-schedule-entries', icon: '📅' },
   { name: 'Activity Schedule', path: '/admin/activity-schedule-entries', icon: '📆' },
   { name: 'Payments', path: '/admin/payments', icon: '💸' },
+  { name: 'Balances', path: '/admin/balances', icon: '💵' },
 ];
 </script>
 

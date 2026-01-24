@@ -266,20 +266,34 @@ export interface UpdateIndividualActivityPriceListDto extends Partial<CreateIndi
 // Payment
 export interface Payment extends BaseEntity {
   stableId: string;
-  participantId: string;
+  contactPersonId: string;
   amount: number;
   paymentDate: string;
-  balance: number;
 }
 
 export interface CreatePaymentDto {
   stableId: string;
-  participantId: string;
+  contactPersonId: string;
   amount: number;
   paymentDate: string;
-  balance: number;
 }
 
 export interface UpdatePaymentDto extends Partial<CreatePaymentDto> {
+  version?: number;
+}
+
+// Balance
+export interface Balance extends BaseEntity {
+  contactPersonId: string;
+  contactPerson?: ContactPerson;
+  balance: number;
+}
+
+export interface CreateBalanceDto {
+  contactPersonId: string;
+  balance: number;
+}
+
+export interface UpdateBalanceDto extends Partial<CreateBalanceDto> {
   version?: number;
 }

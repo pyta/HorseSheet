@@ -13,6 +13,7 @@ import { Stable } from '../stable/entities/stable.entity';
 import { Activity } from '../activity/entities/activity.entity';
 import { Instructor } from '../instructor/entities/instructor.entity';
 import { Participant } from '../participant/entities/participant.entity';
+import { IndividualActivityPriceListHistory } from '../individual-activity-price-list-history/entities/individual-activity-price-list-history.entity';
 
 @Injectable()
 export class IndividualActivityPriceListService {
@@ -27,6 +28,8 @@ export class IndividualActivityPriceListService {
     private readonly instructorRepository: Repository<Instructor>,
     @InjectRepository(Participant)
     private readonly participantRepository: Repository<Participant>,
+    @InjectRepository(IndividualActivityPriceListHistory)
+    private readonly individualActivityPriceListHistoryRepository: Repository<IndividualActivityPriceListHistory>,
   ) {}
 
   async create(
@@ -94,7 +97,22 @@ export class IndividualActivityPriceListService {
       ...createIndividualActivityPriceListDto,
       currency: createIndividualActivityPriceListDto.currency || 'PLN',
     });
-    return await this.individualActivityPriceListRepository.save(individualActivityPriceList);
+    const savedPriceList = await this.individualActivityPriceListRepository.save(individualActivityPriceList);
+
+    // Create history entry
+    const historyEntry = this.individualActivityPriceListHistoryRepository.create({
+      stableId: savedPriceList.stableId,
+      activityId: savedPriceList.activityId,
+      price: savedPriceList.price,
+      currency: savedPriceList.currency,
+      instructorId: savedPriceList.instructorId,
+      participantId: savedPriceList.participantId,
+      dateFrom: new Date(),
+      dateTo: null,
+    });
+    await this.individualActivityPriceListHistoryRepository.save(historyEntry);
+
+    return savedPriceList;
   }
 
   async findAll(): Promise<IndividualActivityPriceList[]> {
@@ -185,6 +203,52 @@ export class IndividualActivityPriceListService {
           `Participant with ID ${updateIndividualActivityPriceListDto.participantId} not found or inactive`,
         );
       }
+    }
+
+    // Check if price changed (field that affects pricing)
+    const priceChanged =
+      updateIndividualActivityPriceListDto.price !== undefined &&
+      updateIndividualActivityPriceListDto.price !== individualActivityPriceList.price;
+
+    if (priceChanged) {
+      // Close existing history entry
+      const whereCondition: any = {
+        stableId: individualActivityPriceList.stableId,
+        instructorId: individualActivityPriceList.instructorId,
+        participantId: individualActivityPriceList.participantId,
+        dateTo: IsNull(),
+        deletedAt: IsNull(),
+      };
+
+      // Handle nullable activityId
+      if (individualActivityPriceList.activityId === null) {
+        whereCondition.activityId = IsNull();
+      } else {
+        whereCondition.activityId = individualActivityPriceList.activityId;
+      }
+
+      const existingHistory = await this.individualActivityPriceListHistoryRepository.findOne({
+        where: whereCondition,
+        order: { dateFrom: 'DESC' },
+      });
+
+      if (existingHistory) {
+        existingHistory.dateTo = new Date();
+        await this.individualActivityPriceListHistoryRepository.save(existingHistory);
+      }
+
+      // Create new history entry
+      const historyEntry = this.individualActivityPriceListHistoryRepository.create({
+        stableId: individualActivityPriceList.stableId,
+        activityId: updateIndividualActivityPriceListDto.activityId !== undefined ? updateIndividualActivityPriceListDto.activityId : individualActivityPriceList.activityId,
+        price: updateIndividualActivityPriceListDto.price !== undefined ? updateIndividualActivityPriceListDto.price : individualActivityPriceList.price,
+        currency: updateIndividualActivityPriceListDto.currency || individualActivityPriceList.currency,
+        instructorId: updateIndividualActivityPriceListDto.instructorId || individualActivityPriceList.instructorId,
+        participantId: updateIndividualActivityPriceListDto.participantId || individualActivityPriceList.participantId,
+        dateFrom: new Date(),
+        dateTo: null,
+      });
+      await this.individualActivityPriceListHistoryRepository.save(historyEntry);
     }
 
     Object.assign(individualActivityPriceList, updateIndividualActivityPriceListDto);

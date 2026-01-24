@@ -14,6 +14,8 @@ import { Stable } from '../stable/entities/stable.entity';
 import { Instructor } from '../instructor/entities/instructor.entity';
 import { Activity } from '../activity/entities/activity.entity';
 import { Participant } from '../participant/entities/participant.entity';
+import { QueueService } from '../queue/queue.service';
+import { BalanceCalculationService } from '../balance/balance-calculation.service';
 
 @Injectable()
 export class ActivityScheduleEntryService {
@@ -30,6 +32,8 @@ export class ActivityScheduleEntryService {
     private readonly activityRepository: Repository<Activity>,
     @InjectRepository(Participant)
     private readonly participantRepository: Repository<Participant>,
+    private readonly queueService: QueueService,
+    private readonly balanceCalculationService: BalanceCalculationService,
   ) {}
 
   async create(
@@ -113,6 +117,24 @@ export class ActivityScheduleEntryService {
         }),
     );
     await this.activityScheduleEntryDetailsRepository.save(associations);
+
+    // Add balance update messages to queue for each participant
+    for (const participantId of createActivityScheduleEntryDto.participantIds) {
+      const participant = await this.participantRepository.findOne({
+        where: { id: participantId },
+        relations: ['defaultContactPerson'],
+      });
+      if (participant && participant.defaultContactPerson) {
+        const price = await this.balanceCalculationService.calculateActivityPrice(
+          savedEntry,
+          participantId,
+        );
+        await this.queueService.addBalanceUpdate({
+          value: -price,
+          contactPersonId: participant.defaultContactPerson.id,
+        });
+      }
+    }
 
     return await this.findOne(savedEntry.id);
   }
@@ -253,6 +275,61 @@ export class ActivityScheduleEntryService {
           }),
       );
       await this.activityScheduleEntryDetailsRepository.save(associations);
+
+      // Add balance update messages to queue for updated participants
+      for (const participantId of updateActivityScheduleEntryDto.participantIds) {
+        const participant = await this.participantRepository.findOne({
+          where: { id: participantId },
+          relations: ['defaultContactPerson'],
+        });
+        if (participant && participant.defaultContactPerson) {
+          // Calculate old price (negative) and new price (positive)
+          const oldPrice = await this.balanceCalculationService.calculateActivityPrice(
+            activityScheduleEntry,
+            participantId,
+          );
+          const newPrice = await this.balanceCalculationService.calculateActivityPrice(
+            savedEntry,
+            participantId,
+          );
+          const totalValue = newPrice - oldPrice;
+          await this.queueService.addBalanceUpdate({
+            value: totalValue,
+            contactPersonId: participant.defaultContactPerson.id,
+          });
+        }
+      }
+    } else if (
+      updateActivityScheduleEntryDto.duration !== undefined ||
+      updateActivityScheduleEntryDto.date ||
+      updateActivityScheduleEntryDto.activityId ||
+      updateActivityScheduleEntryDto.instructorId
+    ) {
+      // If duration, date, activity, or instructor changed, recalculate for all participants
+      const entryWithDetails = await this.findOne(savedEntry.id);
+      if (entryWithDetails.activityScheduleEntryDetails) {
+        for (const detail of entryWithDetails.activityScheduleEntryDetails) {
+          const participant = await this.participantRepository.findOne({
+            where: { id: detail.participantId },
+            relations: ['defaultContactPerson'],
+          });
+          if (participant && participant.defaultContactPerson) {
+            const oldPrice = await this.balanceCalculationService.calculateActivityPrice(
+              activityScheduleEntry,
+              detail.participantId,
+            );
+            const newPrice = await this.balanceCalculationService.calculateActivityPrice(
+              savedEntry,
+              detail.participantId,
+            );
+            const totalValue = newPrice - oldPrice;
+            await this.queueService.addBalanceUpdate({
+              value: totalValue,
+              contactPersonId: participant.defaultContactPerson.id,
+            });
+          }
+        }
+      }
     }
 
     return await this.findOne(savedEntry.id);
@@ -260,6 +337,27 @@ export class ActivityScheduleEntryService {
 
   async remove(id: string): Promise<void> {
     const activityScheduleEntry = await this.findOne(id);
+    
+    // Add balance update messages to queue for each participant (negative value)
+    if (activityScheduleEntry.activityScheduleEntryDetails) {
+      for (const detail of activityScheduleEntry.activityScheduleEntryDetails) {
+        const participant = await this.participantRepository.findOne({
+          where: { id: detail.participantId },
+          relations: ['defaultContactPerson'],
+        });
+        if (participant && participant.defaultContactPerson) {
+          const price = await this.balanceCalculationService.calculateActivityPrice(
+            activityScheduleEntry,
+            detail.participantId,
+          );
+          await this.queueService.addBalanceUpdate({
+            value: price,
+            contactPersonId: participant.defaultContactPerson.id,
+          });
+        }
+      }
+    }
+
     await this.activityScheduleEntryRepository.softRemove(activityScheduleEntry);
   }
 }

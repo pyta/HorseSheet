@@ -5,9 +5,10 @@ import { ActivityPriceListController } from './activity-price-list.controller';
 import { ActivityPriceList } from './entities/activity-price-list.entity';
 import { Stable } from '../stable/entities/stable.entity';
 import { Activity } from '../activity/entities/activity.entity';
+import { ActivityPriceListHistory } from '../activity-price-list-history/entities/activity-price-list-history.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ActivityPriceList, Stable, Activity])],
+  imports: [TypeOrmModule.forFeature([ActivityPriceList, Stable, Activity, ActivityPriceListHistory])],
   controllers: [ActivityPriceListController],
   providers: [ActivityPriceListService],
   exports: [ActivityPriceListService],

@@ -4,10 +4,11 @@ import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { Payment } from './entities/payment.entity';
 import { Stable } from '../stable/entities/stable.entity';
-import { Participant } from '../participant/entities/participant.entity';
+import { ContactPerson } from '../contact-person/entities/contact-person.entity';
+import { QueueModule } from '../queue/queue.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payment, Stable, Participant])],
+  imports: [TypeOrmModule.forFeature([Payment, Stable, ContactPerson]), QueueModule],
   controllers: [PaymentController],
   providers: [PaymentService],
   exports: [PaymentService],

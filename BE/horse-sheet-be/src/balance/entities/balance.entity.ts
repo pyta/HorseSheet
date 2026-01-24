@@ -1,17 +1,9 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { Stable } from '../../stable/entities/stable.entity';
 import { ContactPerson } from '../../contact-person/entities/contact-person.entity';
 
-@Entity('payments')
-export class Payment extends BaseEntity {
-  @Column({ type: 'uuid' })
-  stableId: string;
-
-  @ManyToOne(() => Stable)
-  @JoinColumn({ name: 'stableId' })
-  stable: Stable;
-
+@Entity('balances')
+export class Balance extends BaseEntity {
   @Column({ type: 'uuid' })
   contactPersonId: string;
 
@@ -20,8 +12,6 @@ export class Payment extends BaseEntity {
   contactPerson: ContactPerson;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  amount: number;
-
-  @Column({ type: 'date' })
-  paymentDate: Date;
+  balance: number;
 }
+

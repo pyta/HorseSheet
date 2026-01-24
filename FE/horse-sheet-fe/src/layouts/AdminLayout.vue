@@ -15,9 +15,10 @@ const menuItems = [
   { name: 'Activity Schedule', path: '/admin/activity-schedule-entries', icon: '📆' },
   { name: 'Service Prices', path: '/admin/service-price-lists', icon: '💰' },
   { name: 'Activity Prices', path: '/admin/activity-price-lists', icon: '💵' },
-  { name: 'Individual Service Prices', path: '/admin/individual-service-price-lists', icon: '💳' },
-  { name: 'Individual Activity Prices', path: '/admin/individual-activity-price-lists', icon: '💴' },
-  { name: 'Payments', path: '/admin/payments', icon: '💸' },
+      { name: 'Individual Service Prices', path: '/admin/individual-service-price-lists', icon: '💳' },
+      { name: 'Individual Activity Prices', path: '/admin/individual-activity-price-lists', icon: '💴' },
+      { name: 'Payments', path: '/admin/payments', icon: '💸' },
+      { name: 'Balances', path: '/admin/balances', icon: '💵' },
 ];
 </script>
 

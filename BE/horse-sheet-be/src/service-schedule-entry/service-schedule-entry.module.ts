@@ -7,6 +7,8 @@ import { ServiceScheduleEntryDetails } from './entities/service-schedule-entry-d
 import { Stable } from '../stable/entities/stable.entity';
 import { Service } from '../service/entities/service.entity';
 import { Participant } from '../participant/entities/participant.entity';
+import { QueueModule } from '../queue/queue.module';
+import { BalanceModule } from '../balance/balance.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { Participant } from '../participant/entities/participant.entity';
       Service,
       Participant,
     ]),
+    QueueModule,
+    BalanceModule,
   ],
   controllers: [ServiceScheduleEntryController],
   providers: [ServiceScheduleEntryService],

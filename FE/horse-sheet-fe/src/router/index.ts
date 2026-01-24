@@ -223,6 +223,22 @@ const routes: RouteRecordRaw[] = [
         name: 'admin-payments-edit',
         component: () => import('@/views/admin/payments/PaymentFormView.vue'),
       },
+      // Balances
+      {
+        path: 'balances',
+        name: 'admin-balances',
+        component: () => import('@/views/admin/balances/BalancesListView.vue'),
+      },
+      {
+        path: 'balances/new',
+        name: 'admin-balances-new',
+        component: () => import('@/views/admin/balances/BalanceFormView.vue'),
+      },
+      {
+        path: 'balances/:id',
+        name: 'admin-balances-edit',
+        component: () => import('@/views/admin/balances/BalanceFormView.vue'),
+      },
     ],
   },
 ];

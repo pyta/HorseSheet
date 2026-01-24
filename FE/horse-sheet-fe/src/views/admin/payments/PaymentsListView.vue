@@ -2,21 +2,21 @@
 import { ref, onMounted } from 'vue';
 import { paymentService } from '@/services/payment.service';
 import { stableService } from '@/services/stable.service';
-import { participantService } from '@/services/participant.service';
+import { contactPersonService } from '@/services/contact-person.service';
 import { useUIStore } from '@/stores/ui';
 import { useConfirm } from '@/composables/useConfirm';
-import type { Payment, Stable, Participant } from '@/types';
+import type { Payment, Stable, ContactPerson } from '@/types';
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
 const payments = ref<Payment[]>([]);
 const stables = ref<Stable[]>([]);
-const participants = ref<Participant[]>([]);
+const contactPersons = ref<ContactPerson[]>([]);
 const loading = ref(false);
 
 onMounted(async () => {
-  await Promise.all([loadPayments(), loadStables(), loadParticipants()]);
+  await Promise.all([loadPayments(), loadStables(), loadContactPersons()]);
 });
 
 async function loadStables() {
@@ -28,12 +28,12 @@ async function loadStables() {
   }
 }
 
-async function loadParticipants() {
+async function loadContactPersons() {
   try {
-    const data = await participantService.findAll();
-    participants.value = Array.isArray(data) ? data : [];
+    const data = await contactPersonService.findAll();
+    contactPersons.value = Array.isArray(data) ? data : [];
   } catch {
-    participants.value = [];
+    contactPersons.value = [];
   }
 }
 
@@ -55,9 +55,9 @@ function getStableName(stableId: string): string {
   return stables.value.find((s) => s.id === stableId)?.name || stableId;
 }
 
-function getParticipantName(participantId: string): string {
-  if (!Array.isArray(participants.value)) return participantId;
-  return participants.value.find((p) => p.id === participantId)?.name || participantId;
+function getContactPersonName(contactPersonId: string): string {
+  if (!Array.isArray(contactPersons.value)) return contactPersonId;
+  return contactPersons.value.find((cp) => cp.id === contactPersonId)?.name || contactPersonId;
 }
 
 function formatPrice(price: number | string | null | undefined): string {
@@ -92,23 +92,21 @@ async function handleDelete(id: string) {
         <table class="table">
           <thead>
             <tr>
-              <th>Participant</th>
+              <th>Contact Person</th>
               <th>Amount</th>
               <th>Payment Date</th>
-              <th>Balance</th>
               <th>Stable</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="payments.length === 0">
-              <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">No payments found.</td>
+              <td colspan="5" style="text-align: center; padding: 2rem; color: #7f8c8d">No payments found.</td>
             </tr>
             <tr v-for="payment in payments" :key="payment.id">
-              <td>{{ getParticipantName(payment.participantId) }}</td>
+              <td>{{ getContactPersonName(payment.contactPersonId) }}</td>
               <td>{{ formatPrice(payment.amount) }}</td>
               <td>{{ payment.paymentDate }}</td>
-              <td>{{ formatPrice(payment.balance) }}</td>
               <td>{{ getStableName(payment.stableId) }}</td>
               <td>
                 <div class="table-actions">

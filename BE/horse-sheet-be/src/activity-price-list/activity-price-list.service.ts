@@ -11,6 +11,7 @@ import { CreateActivityPriceListDto } from './dto/create-activity-price-list.dto
 import { UpdateActivityPriceListDto } from './dto/update-activity-price-list.dto';
 import { Stable } from '../stable/entities/stable.entity';
 import { Activity } from '../activity/entities/activity.entity';
+import { ActivityPriceListHistory } from '../activity-price-list-history/entities/activity-price-list-history.entity';
 
 @Injectable()
 export class ActivityPriceListService {
@@ -21,6 +22,8 @@ export class ActivityPriceListService {
     private readonly stableRepository: Repository<Stable>,
     @InjectRepository(Activity)
     private readonly activityRepository: Repository<Activity>,
+    @InjectRepository(ActivityPriceListHistory)
+    private readonly activityPriceListHistoryRepository: Repository<ActivityPriceListHistory>,
   ) {}
 
   async create(createActivityPriceListDto: CreateActivityPriceListDto): Promise<ActivityPriceList> {
@@ -55,7 +58,21 @@ export class ActivityPriceListService {
       currency: createActivityPriceListDto.currency || 'PLN',
       isActive: createActivityPriceListDto.isActive ?? true,
     });
-    return await this.activityPriceListRepository.save(activityPriceList);
+    const savedPriceList = await this.activityPriceListRepository.save(activityPriceList);
+
+    // Create history entry
+    const historyEntry = this.activityPriceListHistoryRepository.create({
+      stableId: savedPriceList.stableId,
+      activityId: savedPriceList.activityId,
+      price: savedPriceList.price,
+      currency: savedPriceList.currency,
+      isActive: savedPriceList.isActive,
+      dateFrom: new Date(),
+      dateTo: null,
+    });
+    await this.activityPriceListHistoryRepository.save(historyEntry);
+
+    return savedPriceList;
   }
 
   async findAll(): Promise<ActivityPriceList[]> {
@@ -110,6 +127,44 @@ export class ActivityPriceListService {
           `Activity with ID ${updateActivityPriceListDto.activityId} not found or inactive`,
         );
       }
+    }
+
+    // Check if price or isActive changed (fields that affect pricing)
+    const priceChanged =
+      updateActivityPriceListDto.price !== undefined &&
+      updateActivityPriceListDto.price !== activityPriceList.price;
+    const isActiveChanged =
+      updateActivityPriceListDto.isActive !== undefined &&
+      updateActivityPriceListDto.isActive !== activityPriceList.isActive;
+
+    if (priceChanged || isActiveChanged) {
+      // Close existing history entry
+      const existingHistory = await this.activityPriceListHistoryRepository.findOne({
+        where: {
+          stableId: activityPriceList.stableId,
+          activityId: activityPriceList.activityId,
+          dateTo: IsNull(),
+          deletedAt: IsNull(),
+        },
+        order: { dateFrom: 'DESC' },
+      });
+
+      if (existingHistory) {
+        existingHistory.dateTo = new Date();
+        await this.activityPriceListHistoryRepository.save(existingHistory);
+      }
+
+      // Create new history entry
+      const historyEntry = this.activityPriceListHistoryRepository.create({
+        stableId: activityPriceList.stableId,
+        activityId: updateActivityPriceListDto.activityId || activityPriceList.activityId,
+        price: updateActivityPriceListDto.price !== undefined ? updateActivityPriceListDto.price : activityPriceList.price,
+        currency: updateActivityPriceListDto.currency || activityPriceList.currency,
+        isActive: updateActivityPriceListDto.isActive !== undefined ? updateActivityPriceListDto.isActive : activityPriceList.isActive,
+        dateFrom: new Date(),
+        dateTo: null,
+      });
+      await this.activityPriceListHistoryRepository.save(historyEntry);
     }
 
     Object.assign(activityPriceList, updateActivityPriceListDto);

@@ -11,6 +11,7 @@ import { CreateServicePriceListDto } from './dto/create-service-price-list.dto';
 import { UpdateServicePriceListDto } from './dto/update-service-price-list.dto';
 import { Stable } from '../stable/entities/stable.entity';
 import { Service } from '../service/entities/service.entity';
+import { ServicePriceListHistory } from '../service-price-list-history/entities/service-price-list-history.entity';
 
 @Injectable()
 export class ServicePriceListService {
@@ -21,6 +22,8 @@ export class ServicePriceListService {
     private readonly stableRepository: Repository<Stable>,
     @InjectRepository(Service)
     private readonly serviceRepository: Repository<Service>,
+    @InjectRepository(ServicePriceListHistory)
+    private readonly servicePriceListHistoryRepository: Repository<ServicePriceListHistory>,
   ) {}
 
   async create(createServicePriceListDto: CreateServicePriceListDto): Promise<ServicePriceList> {
@@ -55,7 +58,21 @@ export class ServicePriceListService {
       currency: createServicePriceListDto.currency || 'PLN',
       isActive: createServicePriceListDto.isActive ?? true,
     });
-    return await this.servicePriceListRepository.save(servicePriceList);
+    const savedPriceList = await this.servicePriceListRepository.save(servicePriceList);
+
+    // Create history entry
+    const historyEntry = this.servicePriceListHistoryRepository.create({
+      stableId: savedPriceList.stableId,
+      serviceId: savedPriceList.serviceId,
+      price: savedPriceList.price,
+      currency: savedPriceList.currency,
+      isActive: savedPriceList.isActive,
+      dateFrom: new Date(),
+      dateTo: null,
+    });
+    await this.servicePriceListHistoryRepository.save(historyEntry);
+
+    return savedPriceList;
   }
 
   async findAll(): Promise<ServicePriceList[]> {
@@ -110,6 +127,44 @@ export class ServicePriceListService {
           `Service with ID ${updateServicePriceListDto.serviceId} not found or inactive`,
         );
       }
+    }
+
+    // Check if price or isActive changed (fields that affect pricing)
+    const priceChanged =
+      updateServicePriceListDto.price !== undefined &&
+      updateServicePriceListDto.price !== servicePriceList.price;
+    const isActiveChanged =
+      updateServicePriceListDto.isActive !== undefined &&
+      updateServicePriceListDto.isActive !== servicePriceList.isActive;
+
+    if (priceChanged || isActiveChanged) {
+      // Close existing history entry
+      const existingHistory = await this.servicePriceListHistoryRepository.findOne({
+        where: {
+          stableId: servicePriceList.stableId,
+          serviceId: servicePriceList.serviceId,
+          dateTo: IsNull(),
+          deletedAt: IsNull(),
+        },
+        order: { dateFrom: 'DESC' },
+      });
+
+      if (existingHistory) {
+        existingHistory.dateTo = new Date();
+        await this.servicePriceListHistoryRepository.save(existingHistory);
+      }
+
+      // Create new history entry
+      const historyEntry = this.servicePriceListHistoryRepository.create({
+        stableId: servicePriceList.stableId,
+        serviceId: updateServicePriceListDto.serviceId || servicePriceList.serviceId,
+        price: updateServicePriceListDto.price !== undefined ? updateServicePriceListDto.price : servicePriceList.price,
+        currency: updateServicePriceListDto.currency || servicePriceList.currency,
+        isActive: updateServicePriceListDto.isActive !== undefined ? updateServicePriceListDto.isActive : servicePriceList.isActive,
+        dateFrom: new Date(),
+        dateTo: null,
+      });
+      await this.servicePriceListHistoryRepository.save(historyEntry);
     }
 
     Object.assign(servicePriceList, updateServicePriceListDto);

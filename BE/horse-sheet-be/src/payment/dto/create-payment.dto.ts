@@ -7,10 +7,10 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   stableId: string;
 
-  @ApiProperty({ description: 'Participant ID', format: 'uuid' })
+  @ApiProperty({ description: 'Contact Person ID', format: 'uuid' })
   @IsUUID()
   @IsNotEmpty()
-  participantId: string;
+  contactPersonId: string;
 
   @ApiProperty({ description: 'Payment amount', example: 100.50 })
   @IsNumber()
@@ -21,9 +21,4 @@ export class CreatePaymentDto {
   @IsDateString()
   @IsNotEmpty()
   paymentDate: string;
-
-  @ApiProperty({ description: 'Balance after payment', example: 500.00 })
-  @IsNumber()
-  @IsNotEmpty()
-  balance: number;
 }

@@ -12,6 +12,7 @@ import { UpdateIndividualServicePriceListDto } from './dto/update-individual-ser
 import { Stable } from '../stable/entities/stable.entity';
 import { Service } from '../service/entities/service.entity';
 import { Participant } from '../participant/entities/participant.entity';
+import { IndividualServicePriceListHistory } from '../individual-service-price-list-history/entities/individual-service-price-list-history.entity';
 
 @Injectable()
 export class IndividualServicePriceListService {
@@ -24,6 +25,8 @@ export class IndividualServicePriceListService {
     private readonly serviceRepository: Repository<Service>,
     @InjectRepository(Participant)
     private readonly participantRepository: Repository<Participant>,
+    @InjectRepository(IndividualServicePriceListHistory)
+    private readonly individualServicePriceListHistoryRepository: Repository<IndividualServicePriceListHistory>,
   ) {}
 
   async create(
@@ -76,7 +79,21 @@ export class IndividualServicePriceListService {
       ...createIndividualServicePriceListDto,
       currency: createIndividualServicePriceListDto.currency || 'PLN',
     });
-    return await this.individualServicePriceListRepository.save(individualServicePriceList);
+    const savedPriceList = await this.individualServicePriceListRepository.save(individualServicePriceList);
+
+    // Create history entry
+    const historyEntry = this.individualServicePriceListHistoryRepository.create({
+      stableId: savedPriceList.stableId,
+      serviceId: savedPriceList.serviceId,
+      price: savedPriceList.price,
+      currency: savedPriceList.currency,
+      participantId: savedPriceList.participantId,
+      dateFrom: new Date(),
+      dateTo: null,
+    });
+    await this.individualServicePriceListHistoryRepository.save(historyEntry);
+
+    return savedPriceList;
   }
 
   async findAll(): Promise<IndividualServicePriceList[]> {
@@ -150,6 +167,50 @@ export class IndividualServicePriceListService {
           `Participant with ID ${updateIndividualServicePriceListDto.participantId} not found or inactive`,
         );
       }
+    }
+
+    // Check if price changed (field that affects pricing)
+    const priceChanged =
+      updateIndividualServicePriceListDto.price !== undefined &&
+      updateIndividualServicePriceListDto.price !== individualServicePriceList.price;
+
+    if (priceChanged) {
+      // Close existing history entry
+      const whereCondition: any = {
+        stableId: individualServicePriceList.stableId,
+        participantId: individualServicePriceList.participantId,
+        dateTo: IsNull(),
+        deletedAt: IsNull(),
+      };
+
+      // Handle nullable serviceId
+      if (individualServicePriceList.serviceId === null) {
+        whereCondition.serviceId = IsNull();
+      } else {
+        whereCondition.serviceId = individualServicePriceList.serviceId;
+      }
+
+      const existingHistory = await this.individualServicePriceListHistoryRepository.findOne({
+        where: whereCondition,
+        order: { dateFrom: 'DESC' },
+      });
+
+      if (existingHistory) {
+        existingHistory.dateTo = new Date();
+        await this.individualServicePriceListHistoryRepository.save(existingHistory);
+      }
+
+      // Create new history entry
+      const historyEntry = this.individualServicePriceListHistoryRepository.create({
+        stableId: individualServicePriceList.stableId,
+        serviceId: updateIndividualServicePriceListDto.serviceId !== undefined ? updateIndividualServicePriceListDto.serviceId : individualServicePriceList.serviceId,
+        price: updateIndividualServicePriceListDto.price !== undefined ? updateIndividualServicePriceListDto.price : individualServicePriceList.price,
+        currency: updateIndividualServicePriceListDto.currency || individualServicePriceList.currency,
+        participantId: updateIndividualServicePriceListDto.participantId || individualServicePriceList.participantId,
+        dateFrom: new Date(),
+        dateTo: null,
+      });
+      await this.individualServicePriceListHistoryRepository.save(historyEntry);
     }
 
     Object.assign(individualServicePriceList, updateIndividualServicePriceListDto);

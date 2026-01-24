@@ -3,9 +3,9 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { paymentService } from '@/services/payment.service';
 import { stableService } from '@/services/stable.service';
-import { participantService } from '@/services/participant.service';
+import { contactPersonService } from '@/services/contact-person.service';
 import { useUIStore } from '@/stores/ui';
-import type { CreatePaymentDto, UpdatePaymentDto, Stable, Participant } from '@/types';
+import type { CreatePaymentDto, UpdatePaymentDto, Stable, ContactPerson } from '@/types';
 
 const router = useRouter();
 const route = useRoute();
@@ -14,13 +14,13 @@ const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
 const submitting = ref(false);
 const stables = ref<Stable[]>([]);
-const participants = ref<Participant[]>([]);
-const form = ref<CreatePaymentDto>({ stableId: '', participantId: '', amount: 0, paymentDate: '', balance: 0 });
+const contactPersons = ref<ContactPerson[]>([]);
+const form = ref<CreatePaymentDto>({ stableId: '', contactPersonId: '', amount: 0, paymentDate: '' });
 const version = ref<number | undefined>(undefined);
 const errors = ref<Record<string, string>>({});
 
 onMounted(async () => {
-  await Promise.all([loadStables(), loadParticipants()]);
+  await Promise.all([loadStables(), loadContactPersons()]);
   if (isEdit.value) await loadPayment();
 });
 
@@ -30,15 +30,15 @@ async function loadStables() {
   } catch {}
 }
 
-async function loadParticipants() {
+async function loadContactPersons() {
   try {
-    participants.value = (await participantService.findAll()).filter((p) => !p.deletedAt);
+    contactPersons.value = (await contactPersonService.findAll()).filter((cp) => !cp.deletedAt);
   } catch {}
 }
 
-const filteredParticipants = computed(() => {
+const filteredContactPersons = computed(() => {
   if (!form.value.stableId) return [];
-  return participants.value.filter((p) => p.stableId === form.value.stableId);
+  return contactPersons.value.filter((cp) => cp.stableId === form.value.stableId);
 });
 
 async function loadPayment() {
@@ -47,10 +47,9 @@ async function loadPayment() {
     const payment = await paymentService.findOne(route.params.id as string);
     form.value = {
       stableId: payment.stableId,
-      participantId: payment.participantId,
+      contactPersonId: payment.contactPersonId,
       amount: payment.amount,
       paymentDate: payment.paymentDate,
-      balance: payment.balance,
     };
     version.value = payment.version;
   } catch (error: any) {
@@ -67,8 +66,8 @@ function validate(): boolean {
     errors.value.stableId = 'Stable is required';
     return false;
   }
-  if (!form.value.participantId) {
-    errors.value.participantId = 'Participant is required';
+  if (!form.value.contactPersonId) {
+    errors.value.contactPersonId = 'Contact person is required';
     return false;
   }
   if (!form.value.amount || form.value.amount <= 0) {
@@ -77,10 +76,6 @@ function validate(): boolean {
   }
   if (!form.value.paymentDate) {
     errors.value.paymentDate = 'Payment date is required';
-    return false;
-  }
-  if (form.value.balance === undefined || form.value.balance === null) {
-    errors.value.balance = 'Balance is required';
     return false;
   }
   return true;
@@ -125,19 +120,19 @@ async function handleSubmit() {
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
           <label class="form-label required" for="stableId">Stable</label>
-          <select id="stableId" v-model="form.stableId" class="form-select" :class="{ 'has-error': errors.stableId }" @change="form.participantId = ''">
+          <select id="stableId" v-model="form.stableId" class="form-select" :class="{ 'has-error': errors.stableId }" @change="form.contactPersonId = ''">
             <option value="">Select a stable</option>
             <option v-for="stable in stables" :key="stable.id" :value="stable.id">{{ stable.name }}</option>
           </select>
           <span v-if="errors.stableId" class="form-error">{{ errors.stableId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="participantId">Participant</label>
-          <select id="participantId" v-model="form.participantId" class="form-select" :class="{ 'has-error': errors.participantId }" :disabled="!form.stableId">
-            <option value="">Select a participant</option>
-            <option v-for="participant in filteredParticipants" :key="participant.id" :value="participant.id">{{ participant.name }}</option>
+          <label class="form-label required" for="contactPersonId">Contact Person</label>
+          <select id="contactPersonId" v-model="form.contactPersonId" class="form-select" :class="{ 'has-error': errors.contactPersonId }" :disabled="!form.stableId">
+            <option value="">Select a contact person</option>
+            <option v-for="contactPerson in filteredContactPersons" :key="contactPerson.id" :value="contactPerson.id">{{ contactPerson.name }}</option>
           </select>
-          <span v-if="errors.participantId" class="form-error">{{ errors.participantId }}</span>
+          <span v-if="errors.contactPersonId" class="form-error">{{ errors.contactPersonId }}</span>
         </div>
         <div class="form-group">
           <label class="form-label required" for="amount">Amount</label>
@@ -148,11 +143,6 @@ async function handleSubmit() {
           <label class="form-label required" for="paymentDate">Payment Date</label>
           <input id="paymentDate" v-model="form.paymentDate" type="date" class="form-input" :class="{ 'has-error': errors.paymentDate }" />
           <span v-if="errors.paymentDate" class="form-error">{{ errors.paymentDate }}</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label required" for="balance">Balance</label>
-          <input id="balance" v-model.number="form.balance" type="number" step="0.01" class="form-input" :class="{ 'has-error': errors.balance }" />
-          <span v-if="errors.balance" class="form-error">{{ errors.balance }}</span>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}</button>

@@ -18,6 +18,8 @@ import { ServiceScheduleEntryModule } from './service-schedule-entry/service-sch
 import { IndividualServicePriceListModule } from './individual-service-price-list/individual-service-price-list.module';
 import { IndividualActivityPriceListModule } from './individual-activity-price-list/individual-activity-price-list.module';
 import { PaymentModule } from './payment/payment.module';
+import { BalanceModule } from './balance/balance.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { PaymentModule } from './payment/payment.module';
     IndividualServicePriceListModule,
     IndividualActivityPriceListModule,
     PaymentModule,
+    BalanceModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],
