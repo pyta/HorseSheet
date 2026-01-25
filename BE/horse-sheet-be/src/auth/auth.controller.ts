@@ -51,10 +51,13 @@ export class AuthController {
     const refreshExpiresIn = process.env.REFRESH_EXPIRES_IN || '7d';
     const refreshExpiresInSeconds = this.parseExpiresIn(refreshExpiresIn);
     const isProduction = process.env.NODE_ENV === 'production';
+    // Detect HTTPS even when behind reverse proxy
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    const shouldUseSecureCookie = isProduction || isSecure;
 
     res.cookie('rt', refreshToken, {
       httpOnly: true,
-      secure: isProduction,
+      secure: shouldUseSecureCookie,
       sameSite: 'lax',
       maxAge: refreshExpiresInSeconds * 1000,
       path: '/',
@@ -90,10 +93,13 @@ export class AuthController {
     const refreshExpiresIn = process.env.REFRESH_EXPIRES_IN || '7d';
     const refreshExpiresInSeconds = this.parseExpiresIn(refreshExpiresIn);
     const isProduction = process.env.NODE_ENV === 'production';
+    // Detect HTTPS even when behind reverse proxy
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    const shouldUseSecureCookie = isProduction || isSecure;
 
     res.cookie('rt', newRefreshToken, {
       httpOnly: true,
-      secure: isProduction,
+      secure: shouldUseSecureCookie,
       sameSite: 'lax',
       maxAge: refreshExpiresInSeconds * 1000,
       path: '/',
@@ -116,9 +122,14 @@ export class AuthController {
       await this.authService.logout(refreshToken);
     }
 
+    // Detect HTTPS even when behind reverse proxy
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    const shouldUseSecureCookie = isProduction || isSecure;
+
     res.clearCookie('rt', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: shouldUseSecureCookie,
       sameSite: 'lax',
       path: '/',
     });

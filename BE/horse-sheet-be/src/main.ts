@@ -13,6 +13,11 @@ async function bootstrap() {
 
   const config = getAppConfig();
 
+  // Trust proxy - CRITICAL for cookies behind reverse proxy
+  // This allows Express to trust X-Forwarded-* headers from nginx
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.getInstance().set('trust proxy', true);
+
   // Global prefix
   app.setGlobalPrefix('api');
 
