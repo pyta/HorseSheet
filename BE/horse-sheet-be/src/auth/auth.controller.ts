@@ -24,6 +24,52 @@ import { CurrentUser } from './decorators/current-user.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /**
+   * Determines the appropriate SameSite value for cookies
+   * - If cross-origin (different domains), use 'none' with secure
+   * - Otherwise, use 'lax' for better security
+   * - Can be overridden with COOKIE_SAME_SITE environment variable
+   */
+  private getCookieSameSite(req: Request, isSecure: boolean): 'lax' | 'none' | 'strict' {
+    // Allow explicit override via environment variable
+    const explicitSameSite = process.env.COOKIE_SAME_SITE?.toLowerCase();
+    if (explicitSameSite === 'none' || explicitSameSite === 'lax' || explicitSameSite === 'strict') {
+      return explicitSameSite as 'lax' | 'none' | 'strict';
+    }
+
+    const corsOrigin = process.env.CORS_ORIGIN;
+    const requestOrigin = req.headers.origin || req.headers.referer;
+    
+    // If no CORS origin configured, default to lax
+    if (!corsOrigin || corsOrigin === '*') {
+      return 'lax';
+    }
+
+    // Check if request origin matches CORS origin (same-origin)
+    if (requestOrigin) {
+      try {
+        const requestUrl = new URL(requestOrigin);
+        const corsUrl = new URL(corsOrigin);
+        
+        // Same origin if protocol, hostname, and port match
+        const isSameOrigin = 
+          requestUrl.protocol === corsUrl.protocol &&
+          requestUrl.hostname === corsUrl.hostname &&
+          requestUrl.port === corsUrl.port;
+        
+        // If same origin, use lax; if cross-origin, use none (requires secure)
+        return isSameOrigin ? 'lax' : (isSecure ? 'none' : 'lax');
+      } catch (e) {
+        // If URL parsing fails, default to lax
+        return 'lax';
+      }
+    }
+
+    // If we can't determine, and we have CORS_ORIGIN set, assume cross-origin if secure
+    // This handles cases where origin header might not be present
+    return isSecure ? 'none' : 'lax';
+  }
+
   @Public()
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute
   @UseGuards(LocalAuthGuard)
@@ -54,14 +100,31 @@ export class AuthController {
     // Detect HTTPS even when behind reverse proxy
     const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
     const shouldUseSecureCookie = isProduction || isSecure;
+    const sameSite = this.getCookieSameSite(req, shouldUseSecureCookie);
+    
+    // For SameSite=None, Secure must be true
+    const finalSecure = sameSite === 'none' ? true : shouldUseSecureCookie;
 
-    res.cookie('rt', refreshToken, {
+    const cookieOptions: any = {
       httpOnly: true,
-      secure: shouldUseSecureCookie,
-      sameSite: 'lax',
+      secure: finalSecure,
+      sameSite: sameSite,
       maxAge: refreshExpiresInSeconds * 1000,
       path: '/',
-    });
+    };
+
+    // Log cookie settings for debugging (remove in production)
+    if (!isProduction) {
+      console.log('Cookie settings:', {
+        secure: finalSecure,
+        sameSite: sameSite,
+        isSecure,
+        corsOrigin: process.env.CORS_ORIGIN,
+        forwardedProto: req.headers['x-forwarded-proto'],
+      });
+    }
+
+    res.cookie('rt', refreshToken, cookieOptions);
 
     return { accessToken };
   }
@@ -96,14 +159,20 @@ export class AuthController {
     // Detect HTTPS even when behind reverse proxy
     const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
     const shouldUseSecureCookie = isProduction || isSecure;
+    const sameSite = this.getCookieSameSite(req, shouldUseSecureCookie);
+    
+    // For SameSite=None, Secure must be true
+    const finalSecure = sameSite === 'none' ? true : shouldUseSecureCookie;
 
-    res.cookie('rt', newRefreshToken, {
+    const cookieOptions: any = {
       httpOnly: true,
-      secure: shouldUseSecureCookie,
-      sameSite: 'lax',
+      secure: finalSecure,
+      sameSite: sameSite,
       maxAge: refreshExpiresInSeconds * 1000,
       path: '/',
-    });
+    };
+
+    res.cookie('rt', newRefreshToken, cookieOptions);
 
     return { accessToken };
   }
@@ -126,11 +195,15 @@ export class AuthController {
     const isProduction = process.env.NODE_ENV === 'production';
     const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
     const shouldUseSecureCookie = isProduction || isSecure;
+    const sameSite = this.getCookieSameSite(req, shouldUseSecureCookie);
+    
+    // For SameSite=None, Secure must be true
+    const finalSecure = sameSite === 'none' ? true : shouldUseSecureCookie;
 
     res.clearCookie('rt', {
       httpOnly: true,
-      secure: shouldUseSecureCookie,
-      sameSite: 'lax',
+      secure: finalSecure,
+      sameSite: sameSite,
       path: '/',
     });
 
