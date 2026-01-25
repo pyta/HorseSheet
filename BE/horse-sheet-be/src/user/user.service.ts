@@ -86,7 +86,14 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[] }> {
-    const user = await this.findOne(id);
+    // Fetch the full user entity (not the transformed version) for updating
+    const user = await this.userRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
     // Optimistic locking check
     if (updateUserDto.version !== undefined && user.version !== updateUserDto.version) {
@@ -137,7 +144,14 @@ export class UserService {
   }
 
   async remove(id: string): Promise<void> {
-    const user = await this.findOne(id);
+    const user = await this.userRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
     await this.userRepository.softRemove(user);
   }
 
