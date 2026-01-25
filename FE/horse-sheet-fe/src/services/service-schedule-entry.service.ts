@@ -26,9 +26,19 @@ interface ServiceScheduleEntryResponse {
 }
 
 function transformEntry(entry: ServiceScheduleEntryResponse): ServiceScheduleEntry {
+  let dateString: string;
+  if (typeof entry.date === 'string') {
+    dateString = entry.date;
+  } else if (entry.date instanceof Date) {
+    const isoString = entry.date.toISOString();
+    dateString = isoString.split('T')[0] ?? '';
+  } else {
+    dateString = '';
+  }
+
   return {
     ...entry,
-    date: typeof entry.date === 'string' ? entry.date : entry.date.toISOString().split('T')[0],
+    date: dateString,
     participantIds: entry.serviceScheduleEntryDetails?.map((detail) => detail.participantId) || [],
   };
 }

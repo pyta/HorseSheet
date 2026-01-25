@@ -10,7 +10,11 @@ function getInstructorInitials(instructor?: Instructor): string {
   if (!instructor || !instructor.name) return '?';
   const parts = instructor.name.trim().split(/\s+/);
   if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    const first = parts[0]?.[0];
+    const last = parts[parts.length - 1]?.[0];
+    if (first && last) {
+      return (first + last).toUpperCase();
+    }
   }
   return instructor.name.substring(0, 2).toUpperCase();
 }
