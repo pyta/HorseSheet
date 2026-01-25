@@ -37,37 +37,36 @@ export class AuthController {
       return explicitSameSite as 'lax' | 'none' | 'strict';
     }
 
-    const corsOrigin = process.env.CORS_ORIGIN;
-    const requestOrigin = req.headers.origin || req.headers.referer;
+    const requestOrigin = req.headers.origin;
+    const backendHost = req.get('host') || req.headers.host;
     
-    // If no CORS origin configured, default to lax
-    if (!corsOrigin || corsOrigin === '*') {
+    // If no origin header, it's likely same-origin (direct request)
+    if (!requestOrigin) {
       return 'lax';
     }
 
-    // Check if request origin matches CORS origin (same-origin)
-    if (requestOrigin) {
-      try {
-        const requestUrl = new URL(requestOrigin);
-        const corsUrl = new URL(corsOrigin);
-        
-        // Same origin if protocol, hostname, and port match
-        const isSameOrigin = 
-          requestUrl.protocol === corsUrl.protocol &&
-          requestUrl.hostname === corsUrl.hostname &&
-          requestUrl.port === corsUrl.port;
-        
-        // If same origin, use lax; if cross-origin, use none (requires secure)
-        return isSameOrigin ? 'lax' : (isSecure ? 'none' : 'lax');
-      } catch (e) {
-        // If URL parsing fails, default to lax
-        return 'lax';
+    try {
+      const requestUrl = new URL(requestOrigin);
+      // Get protocol from request (handles proxy headers)
+      const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+      const backendUrl = new URL(`${protocol}://${backendHost}`);
+      
+      // Compare hostnames - if different, it's cross-origin
+      const isCrossOrigin = 
+        requestUrl.hostname !== backendUrl.hostname ||
+        requestUrl.protocol !== backendUrl.protocol;
+      
+      // For cross-origin, use 'none' (requires secure), otherwise 'lax'
+      return isCrossOrigin && isSecure ? 'none' : 'lax';
+    } catch (e) {
+      // If URL parsing fails, check if CORS_ORIGIN is set (indicates cross-origin)
+      const corsOrigin = process.env.CORS_ORIGIN;
+      if (corsOrigin && corsOrigin !== '*' && isSecure) {
+        // If CORS_ORIGIN is explicitly set, assume cross-origin
+        return 'none';
       }
+      return 'lax';
     }
-
-    // If we can't determine, and we have CORS_ORIGIN set, assume cross-origin if secure
-    // This handles cases where origin header might not be present
-    return isSecure ? 'none' : 'lax';
   }
 
   @Public()
