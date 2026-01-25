@@ -21,10 +21,12 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     const redisHost = this.configService.get<string>('REDIS_HOST', 'localhost');
     const redisPort = this.configService.get<number>('REDIS_PORT', 6379);
+    const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
     this.connectionOptions = {
       host: redisHost,
       port: redisPort,
+      ...(redisPassword && { password: redisPassword }),
       maxRetriesPerRequest: null,
     };
 

@@ -1,0 +1,93 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  # This workflow is a template - customize based on your deployment target
+  # Uncomment and configure the job for your chosen platform
+
+  # Railway Deployment
+  # deploy-railway:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: bervProject/railway-deploy@v1.0.0
+  #       with:
+  #         railway_token: ${{ secrets.RAILWAY_TOKEN }}
+  #         service: backend  # or frontend
+
+  # Render Deployment
+  # deploy-render:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Trigger Render Deploy
+  #       run: |
+  #         curl -X POST "https://api.render.com/deploy/srv/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}"
+
+  # Fly.io Deployment
+  # deploy-fly:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: superfly/flyctl-actions/setup-flyctl@master
+  #     - run: flyctl deploy --remote-only
+  #       working-directory: ./BE/horse-sheet-be
+  #       env:
+  #         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # VPS Deployment (SSH)
+  # deploy-vps:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Deploy to VPS
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.VPS_HOST }}
+  #         username: ${{ secrets.VPS_USER }}
+  #         key: ${{ secrets.VPS_SSH_KEY }}
+  #         script: |
+  #           cd /path/to/HorseSheet
+  #           git pull
+  #           docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+  # Build and test (always run)
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Yarn
+        run: npm install -g yarn
+      
+      - name: Install Backend Dependencies
+        working-directory: ./BE/horse-sheet-be
+        run: yarn install --frozen-lockfile
+      
+      - name: Build Backend
+        working-directory: ./BE/horse-sheet-be
+        run: yarn build
+        env:
+          NODE_ENV: production
+      
+      - name: Install Frontend Dependencies
+        working-directory: ./FE/horse-sheet-fe
+        run: yarn install --frozen-lockfile
+      
+      - name: Build Frontend
+        working-directory: ./FE/horse-sheet-fe
+        run: yarn build
+        env:
+          VITE_API_URL: https://api.example.com/api
+

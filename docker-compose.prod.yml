@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: horsesheet-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-horsesheet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-horsesheet}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-horsesheet}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - horsesheet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: horsesheet-redis-prod
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--no-auth-warning', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - horsesheet-network
+
+  backend:
+    build:
+      context: ./BE/horse-sheet-be
+      dockerfile: Dockerfile
+    container_name: horsesheet-backend-prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-horsesheet}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-horsesheet}
+      DATABASE_SSL: ${DATABASE_SSL:-false}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      ACCESS_EXPIRES_IN: ${ACCESS_EXPIRES_IN:-15m}
+      REFRESH_EXPIRES_IN: ${REFRESH_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - horsesheet-network
+    command: sh -c "yarn migration:run && node dist/main.js"
+
+  frontend:
+    build:
+      context: ./FE/horse-sheet-fe
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: horsesheet-frontend-prod
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - horsesheet-network
+
+  # Optional: External nginx reverse proxy (uncomment if you need SSL termination, rate limiting, or domain-based routing)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: horsesheet-nginx-prod
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #     - nginx_logs:/var/log/nginx
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   networks:
+  #     - horsesheet-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  # nginx_logs:
+  #   driver: local
+
+networks:
+  horsesheet-network:
+    driver: bridge
+

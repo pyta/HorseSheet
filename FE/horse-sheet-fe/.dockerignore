@@ -16,3 +16,7 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+e2e
+test
+__tests__
+
