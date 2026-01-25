@@ -1,10 +1,14 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { getDatabaseConfig } from './config/database.config';
 import { AuthMiddleware } from './common/middleware/auth.middleware';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { StableModule } from './stable/stable.module';
 import { InstructorModule } from './instructor/instructor.module';
 import { ActivityModule } from './activity/activity.module';
@@ -20,6 +24,8 @@ import { IndividualActivityPriceListModule } from './individual-activity-price-l
 import { PaymentModule } from './payment/payment.module';
 import { BalanceModule } from './balance/balance.module';
 import { QueueModule } from './queue/queue.module';
+import { UserModule } from './user/user.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -32,6 +38,13 @@ import { QueueModule } from './queue/queue.module';
       useFactory: getDatabaseConfig,
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute (default)
+      },
+    ]),
     StableModule,
     InstructorModule,
     ActivityModule,
@@ -47,9 +60,22 @@ import { QueueModule } from './queue/queue.module';
     PaymentModule,
     BalanceModule,
     QueueModule,
+    AuthModule,
+    UserModule,
+    RoleModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -1,7 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const routes: RouteRecordRaw[] = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { requiresAuth: false },
+  },
   {
     path: '/',
     redirect: '/admin',
@@ -9,6 +16,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     component: () => import('@/layouts/AdminLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -239,6 +247,28 @@ const routes: RouteRecordRaw[] = [
         name: 'admin-balances-edit',
         component: () => import('@/views/admin/balances/BalanceFormView.vue'),
       },
+      // Users
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: () => import('@/views/admin/users/UsersListView.vue'),
+      },
+      {
+        path: 'users/new',
+        name: 'admin-users-new',
+        component: () => import('@/views/admin/users/UserFormView.vue'),
+      },
+      {
+        path: 'users/:id',
+        name: 'admin-users-edit',
+        component: () => import('@/views/admin/users/UserFormView.vue'),
+      },
+      // Roles
+      {
+        path: 'roles',
+        name: 'admin-roles',
+        component: () => import('@/views/admin/roles/RolesListView.vue'),
+      },
     ],
   },
 ];
@@ -248,11 +278,29 @@ const router = createRouter({
   routes,
 });
 
-// Router guards - ready for future auth implementation
-router.beforeEach((to, from, next) => {
-  // Future: Check authentication here
-  // For MVP: Allow all routes
-  next();
+// Router guards
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  
+  // Initialize auth on first navigation (restore session from refresh token)
+  if (!authStore.isInitialized) {
+    await authStore.initializeAuth();
+  }
+  
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  
+  // Check authentication by checking if token exists (more reliable than computed)
+  const isAuthenticated = !!authStore.accessToken || authStore.isAuthenticated;
+
+  if (requiresAuth && !isAuthenticated) {
+    // Redirect to login if route requires auth and user is not authenticated
+    next({ name: 'login', query: { redirect: to.fullPath } });
+  } else if (to.name === 'login' && isAuthenticated) {
+    // Redirect to admin if already logged in and trying to access login page
+    next('/admin');
+  } else {
+    next();
+  }
 });
 
 export default router;

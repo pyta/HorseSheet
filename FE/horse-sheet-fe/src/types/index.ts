@@ -297,3 +297,44 @@ export interface CreateBalanceDto {
 export interface UpdateBalanceDto extends Partial<CreateBalanceDto> {
   version?: number;
 }
+
+// User
+export interface User extends BaseEntity {
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  isActive: boolean;
+  roles?: Role[];
+}
+
+export interface CreateUserDto {
+  email: string;
+  password: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  isActive?: boolean;
+  roleIds?: string[];
+}
+
+export interface UpdateUserDto extends Partial<Omit<CreateUserDto, 'password'>> {
+  password?: string;
+  version?: number;
+  roleIds?: string[];
+}
+
+// Role
+export interface Role extends BaseEntity {
+  code: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface CreateRoleDto {
+  code: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface UpdateRoleDto extends Partial<CreateRoleDto> {
+  version?: number;
+}

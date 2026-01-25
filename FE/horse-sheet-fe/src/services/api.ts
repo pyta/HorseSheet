@@ -1,17 +1,20 @@
 import axios, { type AxiosInstance, AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { useAuthStore } from '../stores/auth';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Important: send cookies (refresh token)
 });
 
 // Request interceptor - Add Bearer token if available
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('auth_token');
+    const authStore = useAuthStore();
+    const token = authStore.accessToken;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,12 +25,76 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle errors
+// Response interceptor - Handle errors and token refresh
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Handle 401 Unauthorized - try to refresh token
+    // Skip if:
+    // 1. This is already a retry
+    // 2. This is an initialization request
+    // 3. This is the refresh endpoint itself (to avoid infinite loops)
+    const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
+    const authStore = useAuthStore();
+    const storeIsRefreshing = authStore.isRefreshing;
+    
+    if (error.response?.status === 401 && !originalRequest._retry && !(originalRequest as any)._skipAuthRefresh && !isRefreshEndpoint) {
+      // Check both local and store refresh state to prevent concurrent refreshes
+      if (isRefreshing || storeIsRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await authStore.refreshToken();
+        processQueue(null, newToken);
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     // Handle different error types
     if (error.response) {
       // Server responded with error status
@@ -43,7 +110,15 @@ api.interceptors.response.use(
             status: 400,
           });
         case 401:
-          // Unauthorized
+          // Unauthorized (after refresh failed or during initialization)
+          // If this is an initialization request, return a silent error
+          if ((originalRequest as any)._skipAuthRefresh) {
+            return Promise.reject({
+              message: 'No valid session',
+              status: 401,
+              silent: true, // Flag to indicate this is expected
+            });
+          }
           return Promise.reject({
             message: 'Unauthorized. Please log in.',
             status: 401,

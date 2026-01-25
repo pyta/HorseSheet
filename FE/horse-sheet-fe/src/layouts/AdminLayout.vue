@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
+const authStore = useAuthStore();
+
+const handleLogout = async () => {
+  await authStore.logout();
+};
 
 const menuItems = [
   { name: 'Dashboard', path: '/admin', icon: '📊' },
@@ -15,10 +21,12 @@ const menuItems = [
   { name: 'Activity Schedule', path: '/admin/activity-schedule-entries', icon: '📆' },
   { name: 'Service Prices', path: '/admin/service-price-lists', icon: '💰' },
   { name: 'Activity Prices', path: '/admin/activity-price-lists', icon: '💵' },
-      { name: 'Individual Service Prices', path: '/admin/individual-service-price-lists', icon: '💳' },
-      { name: 'Individual Activity Prices', path: '/admin/individual-activity-price-lists', icon: '💴' },
-      { name: 'Payments', path: '/admin/payments', icon: '💸' },
-      { name: 'Balances', path: '/admin/balances', icon: '💵' },
+  { name: 'Individual Service Prices', path: '/admin/individual-service-price-lists', icon: '💳' },
+  { name: 'Individual Activity Prices', path: '/admin/individual-activity-price-lists', icon: '💴' },
+  { name: 'Payments', path: '/admin/payments', icon: '💸' },
+  { name: 'Balances', path: '/admin/balances', icon: '💵' },
+  { name: 'Users', path: '/admin/users', icon: '👥' },
+  { name: 'Roles', path: '/admin/roles', icon: '🔐' },
 ];
 </script>
 
@@ -28,6 +36,12 @@ const menuItems = [
       <div class="sidebar-header">
         <h1>HorseSheet</h1>
         <p>Admin Panel</p>
+      </div>
+      <div class="sidebar-footer">
+        <button @click="handleLogout" class="logout-button">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">Logout</span>
+        </button>
       </div>
       <nav class="sidebar-nav">
         <RouterLink
@@ -114,6 +128,30 @@ const menuItems = [
 
 .nav-label {
   font-size: 0.9rem;
+}
+
+.sidebar-footer {
+  padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .main-content {

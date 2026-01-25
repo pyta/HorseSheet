@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -14,11 +16,34 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  // CORS
+  // CORS - handle comma-separated origins or single origin
+  // Must be configured BEFORE helmet to avoid conflicts
+  // Note: '*' is not allowed when credentials: true, so we validate this
+  if (config.corsOrigin === '*') {
+    console.warn('⚠️  CORS_ORIGIN is set to "*" but credentials are enabled. This will cause CORS errors.');
+    console.warn('   Defaulting to http://localhost:5173 for development.');
+    config.corsOrigin = 'http://localhost:5173';
+  }
+
+  const corsOrigins = config.corsOrigin.includes(',')
+    ? config.corsOrigin.split(',').map((origin) => origin.trim())
+    : config.corsOrigin;
+
+  console.log(`CORS configured for origin(s): ${Array.isArray(corsOrigins) ? corsOrigins.join(', ') : corsOrigins}`);
+
   app.enableCors({
-    origin: config.corsOrigin,
+    origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Authorization'],
   });
+
+  // Security middleware (after CORS)
+  app.use(helmet.default({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }));
+  app.use(cookieParser());
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -65,6 +90,7 @@ async function bootstrap() {
     .addTag('individual-service-price-lists', 'Individual service price list management')
     .addTag('individual-activity-price-lists', 'Individual activity price list management')
     .addTag('payments', 'Payment management')
+    .addTag('auth', 'Authentication')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
