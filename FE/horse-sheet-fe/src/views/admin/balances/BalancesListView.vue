@@ -74,37 +74,69 @@ async function handleDelete(id: string) {
         <router-link v-if="isAdmin" to="/admin/balances/new" class="btn btn-primary">Create New</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
-      <div v-else class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Contact Person</th>
-              <th>Balance</th>
-              <th>Created At</th>
-              <th>Updated At</th>
-              <th v-if="isAdmin">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="balances.length === 0">
-              <td :colspan="isAdmin ? 5 : 4" style="text-align: center; padding: 2rem; color: #7f8c8d">No balances found.</td>
-            </tr>
-            <tr v-for="b in balances" :key="b.id">
-              <td>{{ b.contactPerson?.name || getContactPersonName(b.contactPersonId) }}</td>
-              <td :class="{ 'balance-positive': b.balance >= 0, 'balance-negative': b.balance < 0 }">
+      <div v-else>
+        <!-- Desktop Table View -->
+        <div class="table-container desktop-view">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Contact Person</th>
+                <th>Balance</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+                <th v-if="isAdmin">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="balances.length === 0">
+                <td :colspan="isAdmin ? 5 : 4" style="text-align: center; padding: 2rem; color: #7f8c8d">No balances found.</td>
+              </tr>
+              <tr v-for="b in balances" :key="b.id">
+                <td>{{ b.contactPerson?.name || getContactPersonName(b.contactPersonId) }}</td>
+                <td :class="{ 'balance-positive': b.balance >= 0, 'balance-negative': b.balance < 0 }">
+                  {{ formatBalance(b.balance) }}
+                </td>
+                <td>{{ new Date(b.createdAt).toLocaleDateString() }}</td>
+                <td>{{ new Date(b.updatedAt).toLocaleDateString() }}</td>
+                <td v-if="isAdmin">
+                  <div class="table-actions">
+                    <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary">Edit</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(b.id)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Tile View -->
+        <div v-if="balances.length === 0" class="mobile-view empty-state">
+          <p>No balances found.</p>
+        </div>
+        <div v-else class="mobile-view mobile-tiles">
+          <div v-for="b in balances" :key="b.id" class="data-tile">
+            <div class="tile-header">
+              <h3 class="tile-title">{{ b.contactPerson?.name || getContactPersonName(b.contactPersonId) }}</h3>
+              <span :class="['tile-balance', b.balance >= 0 ? 'balance-positive' : 'balance-negative']">
                 {{ formatBalance(b.balance) }}
-              </td>
-              <td>{{ new Date(b.createdAt).toLocaleDateString() }}</td>
-              <td>{{ new Date(b.updatedAt).toLocaleDateString() }}</td>
-              <td v-if="isAdmin">
-                <div class="table-actions">
-                  <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary">Edit</router-link>
-                  <button class="btn btn-danger" @click="handleDelete(b.id)">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </span>
+            </div>
+            <div class="tile-content">
+              <div class="tile-row">
+                <span class="tile-label">Created:</span>
+                <span class="tile-value">{{ new Date(b.createdAt).toLocaleDateString() }}</span>
+              </div>
+              <div class="tile-row">
+                <span class="tile-label">Updated:</span>
+                <span class="tile-value">{{ new Date(b.updatedAt).toLocaleDateString() }}</span>
+              </div>
+            </div>
+            <div v-if="isAdmin" class="tile-actions">
+              <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(b.id)">Delete</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <ConfirmDialog :show="confirm.show.value" :title="confirm.title.value" :message="confirm.message.value" :confirm-text="confirm.confirmText.value" :cancel-text="confirm.cancelText.value" @confirm="confirm.handleConfirm" @cancel="confirm.handleCancel" />
@@ -124,6 +156,102 @@ async function handleDelete(id: string) {
 .balance-negative {
   color: #e74c3c;
   font-weight: 600;
+}
+
+/* Desktop View */
+.desktop-view {
+  display: block;
+}
+
+.mobile-view {
+  display: none;
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
+  .desktop-view {
+    display: none;
+  }
+
+  .mobile-view {
+    display: block;
+  }
+
+  .mobile-tiles {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .data-tile {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .tile-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    flex: 1;
+  }
+
+  .tile-balance {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .tile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tile-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .tile-label {
+    font-weight: 500;
+    color: #7f8c8d;
+    min-width: 80px;
+  }
+
+  .tile-value {
+    color: #2c3e50;
+    flex: 1;
+  }
+
+  .tile-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+  }
 }
 </style>
 

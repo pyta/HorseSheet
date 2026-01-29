@@ -73,39 +73,79 @@ async function handleDelete(id: string) {
         <router-link to="/admin/service-schedule-entries/new" class="btn btn-primary">Create New</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
-      <div v-else class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Duration</th>
-              <th>Service</th>
-              <th>Stable</th>
-              <th>Participants</th>
-              <th>Active</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="entries.length === 0">
-              <td colspan="7" style="text-align: center; padding: 2rem; color: #7f8c8d">No entries found.</td>
-            </tr>
-            <tr v-for="entry in entries" :key="entry.id">
-              <td>{{ entry.date }}</td>
-              <td>{{ entry.duration }}</td>
-              <td>{{ getServiceName(entry.serviceId) }}</td>
-              <td>{{ getStableName(entry.stableId) }}</td>
-              <td>{{ entry.participantIds?.length || 0 }}</td>
-              <td>{{ entry.isActive ? 'Yes' : 'No' }}</td>
-              <td>
-                <div class="table-actions">
-                  <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary">Edit</router-link>
-                  <button class="btn btn-danger" @click="handleDelete(entry.id)">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-else>
+        <!-- Desktop Table View -->
+        <div class="table-container desktop-view">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Duration</th>
+                <th>Service</th>
+                <th>Stable</th>
+                <th>Participants</th>
+                <th>Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="entries.length === 0">
+                <td colspan="7" style="text-align: center; padding: 2rem; color: #7f8c8d">No entries found.</td>
+              </tr>
+              <tr v-for="entry in entries" :key="entry.id">
+                <td>{{ entry.date }}</td>
+                <td>{{ entry.duration }}</td>
+                <td>{{ getServiceName(entry.serviceId) }}</td>
+                <td>{{ getStableName(entry.stableId) }}</td>
+                <td>{{ entry.participantIds?.length || 0 }}</td>
+                <td>{{ entry.isActive ? 'Yes' : 'No' }}</td>
+                <td>
+                  <div class="table-actions">
+                    <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary">Edit</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(entry.id)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Tile View -->
+        <div v-if="entries.length === 0" class="mobile-view empty-state">
+          <p>No entries found.</p>
+        </div>
+        <div v-else class="mobile-view mobile-tiles">
+          <div v-for="entry in entries" :key="entry.id" class="data-tile">
+            <div class="tile-header">
+              <h3 class="tile-title">{{ getServiceName(entry.serviceId) }}</h3>
+              <span :class="['tile-badge', entry.isActive ? 'badge-active' : 'badge-inactive']">
+                {{ entry.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <div class="tile-content">
+              <div class="tile-row">
+                <span class="tile-label">Date:</span>
+                <span class="tile-value">{{ entry.date }}</span>
+              </div>
+              <div class="tile-row">
+                <span class="tile-label">Duration:</span>
+                <span class="tile-value">{{ entry.duration }} min</span>
+              </div>
+              <div class="tile-row">
+                <span class="tile-label">Stable:</span>
+                <span class="tile-value">{{ getStableName(entry.stableId) }}</span>
+              </div>
+              <div class="tile-row">
+                <span class="tile-label">Participants:</span>
+                <span class="tile-value">{{ entry.participantIds?.length || 0 }}</span>
+              </div>
+            </div>
+            <div class="tile-actions">
+              <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(entry.id)">Delete</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <ConfirmDialog :show="confirm.show.value" :title="confirm.title.value" :message="confirm.message.value" :confirm-text="confirm.confirmText.value" :cancel-text="confirm.cancelText.value" @confirm="confirm.handleConfirm" @cancel="confirm.handleCancel" />
@@ -115,5 +155,112 @@ async function handleDelete(id: string) {
 <style scoped>
 .service-schedule-entries-list {
   max-width: 1400px;
+}
+
+/* Desktop View */
+.desktop-view {
+  display: block;
+}
+
+.mobile-view {
+  display: none;
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
+  .desktop-view {
+    display: none;
+  }
+
+  .mobile-view {
+    display: block;
+  }
+
+  .mobile-tiles {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .data-tile {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .tile-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+
+  .tile-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-active {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .badge-inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .tile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tile-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .tile-label {
+    font-weight: 500;
+    color: #7f8c8d;
+    min-width: 100px;
+  }
+
+  .tile-value {
+    color: #2c3e50;
+    flex: 1;
+  }
+
+  .tile-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+  }
 }
 </style>
