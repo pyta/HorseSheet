@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { userService } from '@/services/user.service';
 import { roleService } from '@/services/role.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import type { User, CreateUserDto, UpdateUserDto, Role } from '@/types';
 const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
+const { t } = useI18n();
 
 const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
@@ -69,26 +71,26 @@ function validate(): boolean {
   errors.value = {};
 
   if (!form.value.email || form.value.email.trim() === '') {
-    errors.value.email = 'Email is required';
+    errors.value.email = t('validation.email.required');
     return false;
   }
 
   // Email format validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(form.value.email)) {
-    errors.value.email = 'Please enter a valid email address';
+    errors.value.email = t('validation.email.invalid');
     return false;
   }
 
   // Password is required only for new users
   if (!isEdit.value && (!form.value.password || form.value.password.trim() === '')) {
-    errors.value.password = 'Password is required';
+    errors.value.password = t('validation.password.required');
     return false;
   }
 
   // Password strength validation (min 8 characters)
   if (form.value.password && form.value.password.length < 8) {
-    errors.value.password = 'Password must be at least 8 characters long';
+    errors.value.password = t('validation.password.minLength');
     return false;
   }
 
@@ -118,19 +120,17 @@ async function handleSubmit() {
         updateData.password = form.value.password;
       }
       await userService.update(route.params.id as string, updateData);
-      uiStore.showSuccess('User updated successfully');
+      uiStore.showSuccess(t('users.updated'));
     } else {
       await userService.create(form.value);
-      uiStore.showSuccess('User created successfully');
+      uiStore.showSuccess(t('users.created'));
     }
 
     router.push('/admin/users');
   } catch (error: any) {
     if (error.status === 409) {
       // Conflict - version mismatch
-      uiStore.showError(
-        'This user has been modified by another user. Please refresh and try again.'
-      );
+      uiStore.showError(t('common.messages.versionConflict'));
       if (isEdit.value) {
         await loadUser();
       }
@@ -138,7 +138,7 @@ async function handleSubmit() {
       // Validation errors
       errors.value = error.errors;
     } else {
-      uiStore.showError(error.message || 'Failed to save user');
+      uiStore.showError(error.message || t('users.saveError'));
     }
   } finally {
     submitting.value = false;
@@ -166,8 +166,8 @@ function isRoleSelected(roleId: string): boolean {
   <div class="user-form">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ isEdit ? 'Edit User' : 'Create New User' }}</h2>
-        <router-link to="/admin/users" class="btn btn-secondary">Back to List</router-link>
+        <h2 class="card-title">{{ isEdit ? t('users.form.editTitle') : t('users.form.createTitle') }}</h2>
+        <router-link to="/admin/users" class="btn btn-secondary">{{ t('common.buttons.backToList') }}</router-link>
       </div>
 
       <div v-if="loading" class="loading">
@@ -176,23 +176,23 @@ function isRoleSelected(roleId: string): boolean {
 
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label class="form-label required" for="email">Email</label>
+          <label class="form-label required" for="email">{{ t('common.labels.email') }}</label>
           <input
             id="email"
             v-model="form.email"
             type="email"
             class="form-input"
             :class="{ 'has-error': errors.email }"
-            placeholder="Enter email address"
+            :placeholder="t('users.form.emailPlaceholder')"
           />
           <span v-if="errors.email" class="form-error">{{ errors.email }}</span>
         </div>
 
         <div class="form-group">
           <label class="form-label" :for="isEdit ? 'password' : 'password-required'">
-            Password
+            {{ t('common.labels.password') }}
             <span v-if="!isEdit" class="required-indicator">*</span>
-            <span v-else class="form-hint">(leave blank to keep current password)</span>
+            <span v-else class="form-hint">{{ t('common.labels.passwordHint') }}</span>
           </label>
           <input
             :id="isEdit ? 'password' : 'password-required'"
@@ -200,30 +200,30 @@ function isRoleSelected(roleId: string): boolean {
             type="password"
             class="form-input"
             :class="{ 'has-error': errors.password }"
-            :placeholder="isEdit ? 'Enter new password (optional)' : 'Enter password'"
+            :placeholder="isEdit ? t('common.labels.enterNewPasswordOptional') : t('common.labels.enterPassword')"
           />
           <span v-if="errors.password" class="form-error">{{ errors.password }}</span>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="firstName">First Name</label>
+          <label class="form-label" for="firstName">{{ t('common.labels.firstName') }}</label>
           <input
             id="firstName"
             v-model="form.firstName"
             type="text"
             class="form-input"
-            placeholder="Enter first name"
+            :placeholder="t('common.labels.enterFirstName')"
           />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="lastName">Last Name</label>
+          <label class="form-label" for="lastName">{{ t('common.labels.lastName') }}</label>
           <input
             id="lastName"
             v-model="form.lastName"
             type="text"
             class="form-input"
-            placeholder="Enter last name"
+            :placeholder="t('common.labels.enterLastName')"
           />
         </div>
 
@@ -235,12 +235,12 @@ function isRoleSelected(roleId: string): boolean {
               type="checkbox"
               style="margin-right: 0.5rem"
             />
-            Active
+            {{ t('common.labels.active') }}
           </label>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Roles</label>
+          <label class="form-label">{{ t('common.labels.roles') }}</label>
           <div class="roles-list">
             <label
               v-for="role in roles"
@@ -263,9 +263,9 @@ function isRoleSelected(roleId: string): boolean {
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" :disabled="submitting">
-            {{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}
+            {{ submitting ? t('common.buttons.saving') : isEdit ? t('common.buttons.update') : t('common.buttons.create') }}
           </button>
-          <router-link to="/admin/users" class="btn btn-secondary">Cancel</router-link>
+          <router-link to="/admin/users" class="btn btn-secondary">{{ t('common.buttons.cancel') }}</router-link>
         </div>
       </form>
     </div>

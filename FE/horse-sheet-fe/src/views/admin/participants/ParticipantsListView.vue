@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { participantService } from '@/services/participant.service';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const participants = ref<Participant[]>([]);
 const stables = ref<Stable[]>([]);
 const loading = ref(false);
@@ -32,7 +34,7 @@ async function loadParticipants() {
     const data = await participantService.findAll();
     participants.value = Array.isArray(data) ? data.filter((p) => !p.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load participants');
+    uiStore.showError(error.message || t('participants.loadError'));
     participants.value = [];
   } finally {
     loading.value = false;
@@ -45,13 +47,13 @@ function getStableName(stableId: string): string {
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this participant?', { title: 'Delete Participant', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('common.messages.confirmDelete'), { title: t('participants.title'), confirmText: t('common.buttons.delete') })) {
     try {
       await participantService.delete(id);
-      uiStore.showSuccess('Participant deleted successfully');
+      uiStore.showSuccess(t('participants.deleted'));
       await loadParticipants();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete participant');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -61,8 +63,8 @@ async function handleDelete(id: string) {
   <div class="participants-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Participants</h2>
-        <router-link to="/admin/participants/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('participants.title') }}</h2>
+        <router-link to="/admin/participants/new" class="btn btn-primary">{{ t('participants.list.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -71,28 +73,28 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Stable</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.name') }}</th>
+                <th>{{ t('common.labels.email') }}</th>
+                <th>{{ t('common.labels.phone') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="participants.length === 0">
-                <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">No participants found.</td>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noParticipantsFound') }}</td>
               </tr>
               <tr v-for="p in participants" :key="p.id">
                 <td>{{ p.name }}</td>
                 <td>{{ p.email || '-' }}</td>
                 <td>{{ p.phone || '-' }}</td>
                 <td>{{ getStableName(p.stableId) }}</td>
-                <td>{{ p.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ p.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/participants/${p.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(p.id)">Delete</button>
+                    <router-link :to="`/admin/participants/${p.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(p.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -102,33 +104,33 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="participants.length === 0" class="mobile-view empty-state">
-          <p>No participants found.</p>
+          <p>{{ t('common.labels.noParticipantsFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="p in participants" :key="p.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ p.name }}</h3>
               <span :class="['tile-badge', p.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ p.isActive ? 'Active' : 'Inactive' }}
+                {{ p.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row" v-if="p.email">
-                <span class="tile-label">Email:</span>
+                <span class="tile-label">{{ t('common.labels.email') }}:</span>
                 <span class="tile-value">{{ p.email }}</span>
               </div>
               <div class="tile-row" v-if="p.phone">
-                <span class="tile-label">Phone:</span>
+                <span class="tile-label">{{ t('common.labels.phone') }}:</span>
                 <span class="tile-value">{{ p.phone }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(p.stableId) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/participants/${p.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(p.id)">Delete</button>
+              <router-link :to="`/admin/participants/${p.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(p.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

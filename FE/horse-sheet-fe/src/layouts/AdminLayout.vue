@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
+import LanguageSelector from '@/components/common/LanguageSelector.vue';
 
 const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 const isMobileMenuOpen = ref(false);
 const isMobile = ref(false);
@@ -74,25 +77,25 @@ const handleLogout = async () => {
   }
 };
 
-const menuItems = [
-  { name: 'Dashboard', path: '/admin', icon: '📊' },
-  { name: 'Stables', path: '/admin/stables', icon: '🏠' },
-  { name: 'Services', path: '/admin/services', icon: '⚙️' },
-  { name: 'Contact Persons', path: '/admin/contact-persons', icon: '👤' },
-  { name: 'Participants', path: '/admin/participants', icon: '👥' },
-  { name: 'Instructors', path: '/admin/instructors', icon: '🎓' },
-  { name: 'Activities', path: '/admin/activities', icon: '🏇' },
-  { name: 'Service Schedule', path: '/admin/service-schedule-entries', icon: '📅' },
-  { name: 'Activity Schedule', path: '/admin/activity-schedule-entries', icon: '📆' },
-  { name: 'Service Prices', path: '/admin/service-price-lists', icon: '💰' },
-  { name: 'Activity Prices', path: '/admin/activity-price-lists', icon: '💵' },
-  { name: 'Individual Service Prices', path: '/admin/individual-service-price-lists', icon: '💳' },
-  { name: 'Individual Activity Prices', path: '/admin/individual-activity-price-lists', icon: '💴' },
-  { name: 'Payments', path: '/admin/payments', icon: '💸' },
-  { name: 'Balances', path: '/admin/balances', icon: '💵' },
-  { name: 'Users', path: '/admin/users', icon: '👥' },
-  { name: 'Roles', path: '/admin/roles', icon: '🔐' },
-];
+const menuItems = computed(() => [
+  { name: t('navigation.dashboard'), path: '/admin', icon: '📊' },
+  { name: t('navigation.stables'), path: '/admin/stables', icon: '🏠' },
+  { name: t('navigation.services'), path: '/admin/services', icon: '⚙️' },
+  { name: t('navigation.contactPersons'), path: '/admin/contact-persons', icon: '👤' },
+  { name: t('navigation.participants'), path: '/admin/participants', icon: '👥' },
+  { name: t('navigation.instructors'), path: '/admin/instructors', icon: '🎓' },
+  { name: t('navigation.activities'), path: '/admin/activities', icon: '🏇' },
+  { name: t('navigation.serviceSchedule'), path: '/admin/service-schedule-entries', icon: '📅' },
+  { name: t('navigation.activitySchedule'), path: '/admin/activity-schedule-entries', icon: '📆' },
+  { name: t('navigation.servicePrices'), path: '/admin/service-price-lists', icon: '💰' },
+  { name: t('navigation.activityPrices'), path: '/admin/activity-price-lists', icon: '💵' },
+  { name: t('navigation.individualServicePrices'), path: '/admin/individual-service-price-lists', icon: '💳' },
+  { name: t('navigation.individualActivityPrices'), path: '/admin/individual-activity-price-lists', icon: '💴' },
+  { name: t('navigation.payments'), path: '/admin/payments', icon: '💸' },
+  { name: t('navigation.balances'), path: '/admin/balances', icon: '💵' },
+  { name: t('navigation.users'), path: '/admin/users', icon: '👥' },
+  { name: t('navigation.roles'), path: '/admin/roles', icon: '🔐' },
+]);
 </script>
 
 <template>
@@ -135,12 +138,15 @@ const menuItems = [
     >
       <div class="sidebar-header">
         <h1>HorseSheet</h1>
-        <p>Admin Panel</p>
+        <p>{{ t('navigation.adminPanel') }}</p>
+      </div>
+      <div class="sidebar-language">
+        <LanguageSelector />
       </div>
       <div class="sidebar-footer">
         <button @click="handleLogout" class="logout-button">
           <span class="nav-icon">🚪</span>
-          <span class="nav-label">Logout</span>
+          <span class="nav-label">{{ t('common.buttons.logout') }}</span>
         </button>
       </div>
       <nav class="sidebar-nav">
@@ -259,6 +265,11 @@ const menuItems = [
   margin: 0.5rem 0 0 0;
   font-size: 0.875rem;
   opacity: 0.8;
+}
+
+.sidebar-language {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-close-button {

@@ -1,0 +1,540 @@
+{
+  "common": {
+    "buttons": {
+      "save": "Zapisz",
+      "cancel": "Anuluj",
+      "delete": "Usuń",
+      "edit": "Edytuj",
+      "create": "Utwórz",
+      "back": "Wstecz",
+      "backToList": "Powrót do listy",
+      "submit": "Wyślij",
+      "close": "Zamknij",
+      "confirm": "Potwierdź",
+      "export": "Eksportuj",
+      "import": "Importuj",
+      "search": "Szukaj",
+      "filter": "Filtruj",
+      "reset": "Resetuj",
+      "loading": "Ładowanie...",
+      "signIn": "Zaloguj się",
+      "signingIn": "Logowanie...",
+      "logout": "Wyloguj",
+      "update": "Aktualizuj",
+      "saving": "Zapisywanie...",
+      "today": "Dzisiaj",
+      "month": "Miesiąc",
+      "week": "Tydzień",
+      "day": "Dzień",
+      "list": "Lista"
+    },
+    "labels": {
+      "name": "Nazwa",
+      "email": "E-mail",
+      "password": "Hasło",
+      "phone": "Telefon",
+      "active": "Aktywny",
+      "inactive": "Nieaktywny",
+      "createdAt": "Data utworzenia",
+      "updatedAt": "Data aktualizacji",
+      "actions": "Akcje",
+      "noData": "Brak danych",
+      "select": "Wybierz",
+      "selectStable": "Wybierz stajnię",
+      "selectContactPerson": "Wybierz osobę kontaktową",
+      "selectActivity": "Wybierz aktywność",
+      "selectService": "Wybierz usługę",
+      "selectInstructor": "Wybierz instruktora",
+      "selectParticipant": "Wybierz uczestnika",
+      "required": "Wymagane",
+      "date": "Data",
+      "time": "Godzina",
+      "duration": "Czas trwania",
+      "durationMinutes": "Czas trwania (min)",
+      "activity": "Aktywność",
+      "service": "Usługa",
+      "instructor": "Instruktor",
+      "stable": "Stajnia",
+      "participants": "Uczestnicy",
+      "participant": "Uczestnik",
+      "price": "Cena",
+      "currency": "Waluta",
+      "address": "Adres",
+      "contactInfo": "Informacje kontaktowe",
+      "timezone": "Strefa czasowa",
+      "roles": "Role",
+      "contactPerson": "Osoba kontaktowa",
+      "amount": "Kwota",
+      "balance": "Saldo",
+      "minutesShort": "min",
+      "yes": "Tak",
+      "no": "Nie",
+      "noEntriesFound": "Nie znaleziono wpisów",
+      "noParticipantsFound": "Nie znaleziono uczestników",
+      "noStablesFound": "Nie znaleziono stajni",
+      "noServicesFound": "Nie znaleziono usług",
+      "noActivitiesFound": "Nie znaleziono aktywności",
+      "noInstructorsFound": "Nie znaleziono instruktorów",
+      "noContactPersonsFound": "Nie znaleziono osób kontaktowych",
+      "noUsersFound": "Nie znaleziono użytkowników",
+      "noPriceListsFound": "Nie znaleziono cenników",
+      "noPaymentsFound": "Nie znaleziono płatności",
+      "noBalancesFound": "Nie znaleziono sald",
+      "noRolesFound": "Nie znaleziono ról",
+      "createFirst": "Utwórz pierwszy element, aby rozpocząć",
+      "description": "Opis",
+      "enterDescription": "Wprowadź opis",
+      "enterEmail": "Wprowadź e-mail",
+      "enterPhone": "Wprowadź telefon",
+      "enterBalanceAmount": "Wprowadź kwotę salda",
+      "timezoneExample": "np. Europe/Warsaw",
+      "durationExample": "np. dzień, miesiąc",
+      "optional": "opcjonalne",
+      "noneGeneralPrice": "Brak (cena ogólna)",
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "enterFirstName": "Wprowadź imię",
+      "enterLastName": "Wprowadź nazwisko",
+      "passwordHint": "(pozostaw puste, aby zachować obecne hasło)",
+      "enterNewPasswordOptional": "Wprowadź nowe hasło (opcjonalne)",
+      "enterPassword": "Wprowadź hasło",
+      "code": "Kod"
+    },
+    "messages": {
+      "success": "Sukces",
+      "error": "Błąd",
+      "warning": "Ostrzeżenie",
+      "info": "Informacja",
+      "confirmDelete": "Czy na pewno chcesz usunąć ten element?",
+      "confirmAction": "Czy na pewno chcesz wykonać tę akcję?",
+      "saved": "Zapisano pomyślnie",
+      "deleted": "Usunięto pomyślnie",
+      "created": "Utworzono pomyślnie",
+      "updated": "Zaktualizowano pomyślnie",
+      "loadError": "Błąd podczas ładowania danych",
+      "saveError": "Błąd podczas zapisywania",
+      "deleteError": "Błąd podczas usuwania",
+      "networkError": "Błąd połączenia z serwerem",
+      "unauthorized": "Brak autoryzacji",
+      "forbidden": "Brak uprawnień",
+      "notFound": "Nie znaleziono",
+      "serverError": "Błąd serwera",
+      "versionConflict": "Ten element został zmodyfikowany przez innego użytkownika. Odśwież stronę i spróbuj ponownie."
+    }
+  },
+  "dashboard": {
+    "title": "Panel administracyjny",
+    "subtitle": "Witamy w panelu administracyjnym HorseSheet",
+    "quickLinks": "Szybkie linki"
+  },
+  "navigation": {
+    "dashboard": "Panel główny",
+    "stables": "Stajnie",
+    "services": "Usługi",
+    "contactPersons": "Osoby kontaktowe",
+    "participants": "Uczestnicy",
+    "instructors": "Instruktorzy",
+    "activities": "Aktywności",
+    "serviceSchedule": "Harmonogram usług",
+    "activitySchedule": "Harmonogram aktywności",
+    "servicePrices": "Cennik usług",
+    "activityPrices": "Cennik aktywności",
+    "individualServicePrices": "Indywidualne ceny usług",
+    "individualActivityPrices": "Indywidualne ceny aktywności",
+    "payments": "Płatności",
+    "balances": "Salda",
+    "users": "Użytkownicy",
+    "roles": "Role",
+    "adminPanel": "Panel administracyjny"
+  },
+  "auth": {
+    "login": {
+      "title": "HorseSheet",
+      "subtitle": "Zaloguj się do swojego konta",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "Wprowadź adres e-mail",
+      "passwordLabel": "Hasło",
+      "passwordPlaceholder": "Wprowadź hasło",
+      "signIn": "Zaloguj się",
+      "signingIn": "Logowanie...",
+      "success": "Logowanie zakończone sukcesem",
+      "failed": "Logowanie nie powiodło się. Sprawdź swoje dane logowania."
+    }
+  },
+  "validation": {
+    "required": "To pole jest wymagane",
+    "email": {
+      "required": "E-mail jest wymagany",
+      "invalid": "Wprowadź poprawny adres e-mail"
+    },
+    "password": {
+      "required": "Hasło jest wymagane",
+      "minLength": "Hasło musi mieć co najmniej 8 znaków"
+    },
+    "name": {
+      "required": "Nazwa jest wymagana"
+    },
+    "stable": {
+      "required": "Stajnia jest wymagana"
+    },
+    "contactPerson": {
+      "required": "Osoba kontaktowa jest wymagana"
+    },
+    "activity": {
+      "required": "Aktywność jest wymagana"
+    },
+    "service": {
+      "required": "Usługa jest wymagana"
+    },
+    "instructor": {
+      "required": "Instruktor jest wymagany"
+    },
+    "participant": {
+      "required": "Uczestnik jest wymagany"
+    },
+    "balance": {
+      "required": "Saldo jest wymagane",
+      "mustBeNumber": "Saldo musi być liczbą",
+      "mustBeValidNumber": "Saldo musi być prawidłową liczbą"
+    },
+    "date": {
+      "required": "Data jest wymagana",
+      "invalid": "Nieprawidłowy format daty"
+    },
+    "time": {
+      "required": "Godzina jest wymagana",
+      "invalid": "Nieprawidłowy format godziny"
+    },
+    "price": {
+      "required": "Cena jest wymagana",
+      "mustBeNumber": "Cena musi być liczbą",
+      "mustBePositive": "Cena musi być dodatnia",
+      "mustBeGreaterThanZero": "Cena musi być większa od 0"
+    },
+    "duration": {
+      "required": "Czas trwania jest wymagany",
+      "mustBeGreaterThanZero": "Czas trwania musi być większy od 0"
+    },
+    "participant": {
+      "required": "Uczestnik jest wymagany"
+    },
+    "amount": {
+      "required": "Kwota jest wymagana",
+      "mustBeGreaterThanZero": "Kwota musi być większa od 0"
+    },
+    "balance": {
+      "required": "Saldo jest wymagane",
+      "mustBeValidNumber": "Saldo musi być prawidłową liczbą"
+    },
+    "participantIds": {
+      "atLeastOneRequired": "Wymagany jest co najmniej jeden uczestnik"
+    }
+  },
+  "errors": {
+    "validation": {
+      "fieldRequired": "To pole jest wymagane",
+      "invalidFormat": "Nieprawidłowy format",
+      "invalidEmail": "Nieprawidłowy adres e-mail",
+      "invalidNumber": "Nieprawidłowa liczba",
+      "minLength": "Wartość jest za krótka",
+      "maxLength": "Wartość jest za długa",
+      "minValue": "Wartość jest za mała",
+      "maxValue": "Wartość jest za duża"
+    },
+    "api": {
+      "networkError": "Błąd połączenia z serwerem",
+      "timeout": "Przekroczono limit czasu",
+      "unauthorized": "Brak autoryzacji",
+      "forbidden": "Brak uprawnień",
+      "notFound": "Nie znaleziono",
+      "serverError": "Błąd serwera",
+      "badRequest": "Nieprawidłowe żądanie",
+      "conflict": "Konflikt danych"
+    },
+    "generic": {
+      "somethingWentWrong": "Coś poszło nie tak",
+      "tryAgain": "Spróbuj ponownie",
+      "contactSupport": "Skontaktuj się z pomocą techniczną"
+    }
+  },
+  "schedule": {
+    "title": "Harmonogram",
+    "preview": "Podgląd harmonogramu",
+    "showServices": "Pokaż usługi",
+    "showActivities": "Pokaż aktywności",
+    "entries": {
+      "title": "Wpisy harmonogramu aktywności",
+      "createNew": "Utwórz nowy wpis"
+    },
+    "entry": {
+      "created": "Wpis harmonogramu utworzony pomyślnie",
+      "updated": "Wpis harmonogramu zaktualizowany pomyślnie",
+      "deleted": "Wpis harmonogramu usunięty pomyślnie",
+      "loadError": "Błąd podczas ładowania wpisów harmonogramu",
+      "deleteConfirm": "Czy na pewno chcesz usunąć ten wpis harmonogramu?",
+      "deleteTitle": "Usuń wpis harmonogramu"
+    },
+    "activityEntry": {
+      "createTitle": "Utwórz nowy wpis harmonogramu aktywności",
+      "editTitle": "Edytuj wpis harmonogramu aktywności"
+    },
+    "serviceEntry": {
+      "createTitle": "Utwórz nowy wpis harmonogramu usług",
+      "editTitle": "Edytuj wpis harmonogramu usług"
+    },
+    "create": {
+      "title": "Utwórz nowy wpis harmonogramu"
+    },
+    "edit": {
+      "title": "Edytuj wpis harmonogramu"
+    }
+  },
+  "participants": {
+    "title": "Uczestnicy",
+    "list": {
+      "title": "Lista uczestników",
+      "createNew": "Utwórz nowego uczestnika"
+    },
+    "form": {
+      "createTitle": "Utwórz nowego uczestnika",
+      "editTitle": "Edytuj uczestnika",
+      "nameLabel": "Nazwa",
+      "namePlaceholder": "Wprowadź nazwę",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "Wprowadź adres e-mail",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "Wprowadź numer telefonu",
+      "stableLabel": "Stajnia",
+      "contactPersonLabel": "Osoba kontaktowa",
+      "activeLabel": "Aktywny"
+    },
+    "created": "Uczestnik utworzony pomyślnie",
+    "updated": "Uczestnik zaktualizowany pomyślnie",
+    "deleted": "Uczestnik usunięty pomyślnie",
+    "loadError": "Błąd podczas ładowania uczestników",
+    "saveError": "Błąd podczas zapisywania uczestnika"
+  },
+  "stables": {
+    "title": "Stajnie",
+    "list": {
+      "title": "Lista stajni",
+      "createNew": "Utwórz nową stajnię"
+    },
+    "form": {
+      "createTitle": "Utwórz nową stajnię",
+      "editTitle": "Edytuj stajnię",
+      "nameLabel": "Nazwa",
+      "namePlaceholder": "Wprowadź nazwę stajni"
+    },
+    "created": "Stajnia utworzona pomyślnie",
+    "updated": "Stajnia zaktualizowana pomyślnie",
+    "deleted": "Stajnia usunięta pomyślnie",
+    "loadError": "Błąd podczas ładowania stajni",
+    "saveError": "Błąd podczas zapisywania stajni"
+  },
+  "services": {
+    "title": "Usługi",
+    "list": {
+      "title": "Lista usług",
+      "createNew": "Utwórz nową usługę"
+    },
+    "form": {
+      "createTitle": "Utwórz nową usługę",
+      "editTitle": "Edytuj usługę",
+      "nameLabel": "Nazwa",
+      "namePlaceholder": "Wprowadź nazwę usługi"
+    },
+    "created": "Usługa utworzona pomyślnie",
+    "updated": "Usługa zaktualizowana pomyślnie",
+    "deleted": "Usługa usunięta pomyślnie",
+    "loadError": "Błąd podczas ładowania usług",
+    "saveError": "Błąd podczas zapisywania usługi"
+  },
+  "instructors": {
+    "title": "Instruktorzy",
+    "list": {
+      "title": "Lista instruktorów",
+      "createNew": "Utwórz nowego instruktora"
+    },
+    "form": {
+      "createTitle": "Utwórz nowego instruktora",
+      "editTitle": "Edytuj instruktora",
+      "nameLabel": "Nazwa",
+      "namePlaceholder": "Wprowadź nazwę instruktora"
+    },
+    "created": "Instruktor utworzony pomyślnie",
+    "updated": "Instruktor zaktualizowany pomyślnie",
+    "deleted": "Instruktor usunięty pomyślnie",
+    "loadError": "Błąd podczas ładowania instruktorów",
+    "saveError": "Błąd podczas zapisywania instruktora"
+  },
+  "activities": {
+    "title": "Aktywności",
+    "list": {
+      "title": "Lista aktywności",
+      "createNew": "Utwórz nową aktywność"
+    },
+    "form": {
+      "createTitle": "Utwórz nową aktywność",
+      "editTitle": "Edytuj aktywność",
+      "nameLabel": "Nazwa",
+      "namePlaceholder": "Wprowadź nazwę aktywności"
+    },
+    "created": "Aktywność utworzona pomyślnie",
+    "updated": "Aktywność zaktualizowana pomyślnie",
+    "deleted": "Aktywność usunięta pomyślnie",
+    "loadError": "Błąd podczas ładowania aktywności",
+    "saveError": "Błąd podczas zapisywania aktywności"
+  },
+  "contactPersons": {
+    "title": "Osoby kontaktowe",
+    "list": {
+      "title": "Lista osób kontaktowych",
+      "createNew": "Utwórz nową osobę kontaktową"
+    },
+    "form": {
+      "createTitle": "Utwórz nową osobę kontaktową",
+      "editTitle": "Edytuj osobę kontaktową",
+      "nameLabel": "Nazwa",
+      "namePlaceholder": "Wprowadź nazwę"
+    },
+    "created": "Osoba kontaktowa utworzona pomyślnie",
+    "updated": "Osoba kontaktowa zaktualizowana pomyślnie",
+    "deleted": "Osoba kontaktowa usunięta pomyślnie",
+    "loadError": "Błąd podczas ładowania osób kontaktowych",
+    "saveError": "Błąd podczas zapisywania osoby kontaktowej"
+  },
+  "users": {
+    "title": "Użytkownicy",
+    "list": {
+      "title": "Lista użytkowników",
+      "createNew": "Utwórz nowego użytkownika"
+    },
+    "form": {
+      "createTitle": "Utwórz nowego użytkownika",
+      "editTitle": "Edytuj użytkownika",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "Wprowadź adres e-mail"
+    },
+    "created": "Użytkownik utworzony pomyślnie",
+    "updated": "Użytkownik zaktualizowany pomyślnie",
+    "deleted": "Użytkownik usunięty pomyślnie",
+    "loadError": "Błąd podczas ładowania użytkowników",
+    "saveError": "Błąd podczas zapisywania użytkownika"
+  },
+  "priceLists": {
+    "title": "Cenniki",
+    "service": {
+      "title": "Cennik usług",
+      "list": {
+        "title": "Lista cenników usług",
+        "createNew": "Utwórz nowy cennik usług"
+      },
+      "form": {
+        "createTitle": "Utwórz nowy cennik usług",
+        "editTitle": "Edytuj cennik usług"
+      },
+      "created": "Cennik usług utworzony pomyślnie",
+      "updated": "Cennik usług zaktualizowany pomyślnie",
+      "deleted": "Cennik usług usunięty pomyślnie",
+      "loadError": "Błąd podczas ładowania cenników usług",
+      "saveError": "Błąd podczas zapisywania cennika usług"
+    },
+    "activity": {
+      "title": "Cennik aktywności",
+      "list": {
+        "title": "Lista cenników aktywności",
+        "createNew": "Utwórz nowy cennik aktywności"
+      },
+      "form": {
+        "createTitle": "Utwórz nowy cennik aktywności",
+        "editTitle": "Edytuj cennik aktywności"
+      },
+      "created": "Cennik aktywności utworzony pomyślnie",
+      "updated": "Cennik aktywności zaktualizowany pomyślnie",
+      "deleted": "Cennik aktywności usunięty pomyślnie",
+      "loadError": "Błąd podczas ładowania cenników aktywności",
+      "saveError": "Błąd podczas zapisywania cennika aktywności"
+    },
+    "individualService": {
+      "title": "Indywidualne ceny usług",
+      "list": {
+        "title": "Indywidualne ceny usług",
+        "createNew": "Utwórz nową indywidualną cenę usługi"
+      },
+      "form": {
+        "createTitle": "Utwórz nową indywidualną cenę usług",
+        "editTitle": "Edytuj indywidualną cenę usług"
+      },
+      "created": "Indywidualny cennik usług utworzony pomyślnie",
+      "updated": "Indywidualny cennik usług zaktualizowany pomyślnie",
+      "deleted": "Indywidualny cennik usług usunięty pomyślnie",
+      "loadError": "Błąd podczas ładowania indywidualnych cenników usług",
+      "saveError": "Błąd podczas zapisywania indywidualnego cennika usług"
+    },
+    "individualActivity": {
+      "title": "Indywidualne ceny aktywności",
+      "list": {
+        "title": "Indywidualne ceny aktywności",
+        "createNew": "Utwórz nową indywidualną cenę aktywności"
+      },
+      "form": {
+        "createTitle": "Utwórz nową indywidualną cenę aktywności",
+        "editTitle": "Edytuj indywidualną cenę aktywności"
+      },
+      "created": "Indywidualny cennik aktywności utworzony pomyślnie",
+      "updated": "Indywidualny cennik aktywności zaktualizowany pomyślnie",
+      "deleted": "Indywidualny cennik aktywności usunięty pomyślnie",
+      "loadError": "Błąd podczas ładowania indywidualnych cenników aktywności",
+      "saveError": "Błąd podczas zapisywania indywidualnego cennika aktywności"
+    }
+  },
+  "payments": {
+    "title": "Płatności",
+    "list": {
+      "title": "Lista płatności",
+      "createNew": "Utwórz nową płatność"
+    },
+    "form": {
+      "createTitle": "Utwórz nową płatność",
+      "editTitle": "Edytuj płatność"
+    },
+    "created": "Płatność utworzona pomyślnie",
+    "updated": "Płatność zaktualizowana pomyślnie",
+    "deleted": "Płatność usunięta pomyślnie",
+    "loadError": "Błąd podczas ładowania płatności",
+    "saveError": "Błąd podczas zapisywania płatności",
+    "paymentDate": "Data płatności",
+    "paymentDateRequired": "Data płatności jest wymagana"
+  },
+  "balances": {
+    "title": "Salda",
+    "list": {
+      "title": "Lista sald",
+      "createNew": "Utwórz nowe saldo"
+    },
+    "form": {
+      "createTitle": "Utwórz nowe saldo",
+      "editTitle": "Edytuj saldo"
+    },
+    "created": "Saldo utworzone pomyślnie",
+    "updated": "Saldo zaktualizowane pomyślnie",
+    "deleted": "Saldo usunięte pomyślnie",
+    "loadError": "Błąd podczas ładowania sald",
+    "saveError": "Błąd podczas zapisywania salda"
+  },
+  "roles": {
+    "title": "Role",
+    "list": {
+      "title": "Lista ról"
+    },
+    "loadError": "Błąd podczas ładowania ról"
+  },
+  "notifications": {
+    "success": "Sukces",
+    "error": "Błąd",
+    "warning": "Ostrzeżenie",
+    "info": "Informacja"
+  }
+}
+

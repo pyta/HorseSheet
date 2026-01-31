@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
 import type { Stable, CreateStableDto, UpdateStableDto } from '@/types';
@@ -8,6 +9,7 @@ import type { Stable, CreateStableDto, UpdateStableDto } from '@/types';
 const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
+const { t } = useI18n();
 
 const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
@@ -43,7 +45,7 @@ async function loadStable() {
     };
     version.value = stable.version;
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load stable');
+    uiStore.showError(error.message || t('stables.loadError'));
     router.push('/admin/stables');
   } finally {
     loading.value = false;
@@ -54,7 +56,7 @@ function validate(): boolean {
   errors.value = {};
 
   if (!form.value.name || form.value.name.trim() === '') {
-    errors.value.name = 'Name is required';
+    errors.value.name = t('validation.name.required');
     return false;
   }
 
@@ -76,19 +78,17 @@ async function handleSubmit() {
         version: version.value,
       };
       await stableService.update(route.params.id as string, updateData);
-      uiStore.showSuccess('Stable updated successfully');
+      uiStore.showSuccess(t('stables.updated'));
     } else {
       await stableService.create(form.value);
-      uiStore.showSuccess('Stable created successfully');
+      uiStore.showSuccess(t('stables.created'));
     }
 
     router.push('/admin/stables');
   } catch (error: any) {
     if (error.status === 409) {
       // Conflict - version mismatch
-      uiStore.showError(
-        'This stable has been modified by another user. Please refresh and try again.'
-      );
+      uiStore.showError(t('common.messages.versionConflict'));
       if (isEdit.value) {
         await loadStable();
       }
@@ -96,7 +96,7 @@ async function handleSubmit() {
       // Validation errors
       errors.value = error.errors;
     } else {
-      uiStore.showError(error.message || 'Failed to save stable');
+      uiStore.showError(error.message || t('stables.saveError'));
     }
   } finally {
     submitting.value = false;
@@ -108,8 +108,8 @@ async function handleSubmit() {
   <div class="stable-form">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ isEdit ? 'Edit Stable' : 'Create New Stable' }}</h2>
-        <router-link to="/admin/stables" class="btn btn-secondary">Back to List</router-link>
+        <h2 class="card-title">{{ isEdit ? t('stables.form.editTitle') : t('stables.form.createTitle') }}</h2>
+        <router-link to="/admin/stables" class="btn btn-secondary">{{ t('common.buttons.backToList') }}</router-link>
       </div>
 
       <div v-if="loading" class="loading">
@@ -118,48 +118,48 @@ async function handleSubmit() {
 
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label class="form-label required" for="name">Name</label>
+          <label class="form-label required" for="name">{{ t('common.labels.name') }}</label>
           <input
             id="name"
             v-model="form.name"
             type="text"
             class="form-input"
             :class="{ 'has-error': errors.name }"
-            placeholder="Enter stable name"
+            :placeholder="t('stables.form.namePlaceholder')"
           />
           <span v-if="errors.name" class="form-error">{{ errors.name }}</span>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="address">Address</label>
+          <label class="form-label" for="address">{{ t('common.labels.address') }}</label>
           <input
             id="address"
             v-model="form.address"
             type="text"
             class="form-input"
-            placeholder="Enter address"
+            :placeholder="t('common.labels.address')"
           />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="contactInfo">Contact Info</label>
+          <label class="form-label" for="contactInfo">{{ t('common.labels.contactInfo') }}</label>
           <input
             id="contactInfo"
             v-model="form.contactInfo"
             type="text"
             class="form-input"
-            placeholder="Enter contact information"
+            :placeholder="t('common.labels.contactInfo')"
           />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="timezone">Timezone</label>
+          <label class="form-label" for="timezone">{{ t('common.labels.timezone') }}</label>
           <input
             id="timezone"
             v-model="form.timezone"
             type="text"
             class="form-input"
-            placeholder="e.g., Europe/Warsaw"
+            :placeholder="t('common.labels.timezoneExample')"
           />
         </div>
 
@@ -171,15 +171,15 @@ async function handleSubmit() {
               type="checkbox"
               style="margin-right: 0.5rem"
             />
-            Active
+            {{ t('common.labels.active') }}
           </label>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" :disabled="submitting">
-            {{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}
+            {{ submitting ? t('common.buttons.saving') : isEdit ? t('common.buttons.update') : t('common.buttons.create') }}
           </button>
-          <router-link to="/admin/stables" class="btn btn-secondary">Cancel</router-link>
+          <router-link to="/admin/stables" class="btn btn-secondary">{{ t('common.buttons.cancel') }}</router-link>
         </div>
       </form>
     </div>

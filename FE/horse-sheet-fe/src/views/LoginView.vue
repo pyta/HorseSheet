@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
+import LanguageSelector from '@/components/common/LanguageSelector.vue';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const uiStore = useUIStore();
+const { t } = useI18n();
 
 const email = ref('');
 const password = ref('');
@@ -19,18 +22,18 @@ const validate = (): boolean => {
   let isValid = true;
 
   if (!email.value) {
-    errors.value.email = 'Email is required';
+    errors.value.email = t('validation.email.required');
     isValid = false;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address';
+    errors.value.email = t('validation.email.invalid');
     isValid = false;
   }
 
   if (!password.value) {
-    errors.value.password = 'Password is required';
+    errors.value.password = t('validation.password.required');
     isValid = false;
   } else if (password.value.length < 8) {
-    errors.value.password = 'Password must be at least 8 characters';
+    errors.value.password = t('validation.password.minLength');
     isValid = false;
   }
 
@@ -57,13 +60,13 @@ const handleSubmit = async () => {
     
     // If login didn't throw, it succeeded - proceed with navigation
     // The router guard will handle authentication check
-    uiStore.showSuccess('Login successful');
+    uiStore.showSuccess(t('auth.login.success'));
     
     // Navigate to the redirect path if available, otherwise go to admin
     const redirectPath = (route.query.redirect as string) || '/admin';
     await router.push(redirectPath);
   } catch (error: any) {
-    const errorMessage = error?.message || 'Login failed. Please check your credentials.';
+    const errorMessage = error?.message || t('auth.login.failed');
     errors.value.general = errorMessage;
     uiStore.showError(errorMessage);
     console.error('Login error:', error);
@@ -75,9 +78,12 @@ const handleSubmit = async () => {
 
 <template>
   <div class="login-container">
+    <div class="language-selector-wrapper">
+      <LanguageSelector />
+    </div>
     <div class="login-card">
-      <h1>HorseSheet</h1>
-      <p class="subtitle">Sign in to your account</p>
+      <h1>{{ t('auth.login.title') }}</h1>
+      <p class="subtitle">{{ t('auth.login.subtitle') }}</p>
 
       <form @submit.prevent="handleSubmit" class="login-form">
         <div v-if="errors.general" class="error-message general-error">
@@ -85,12 +91,12 @@ const handleSubmit = async () => {
         </div>
 
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">{{ t('auth.login.emailLabel') }}</label>
           <input
             id="email"
             v-model="email"
             type="email"
-            placeholder="Enter your email"
+            :placeholder="t('auth.login.emailPlaceholder')"
             :disabled="isLoading"
             :class="{ error: errors.email }"
           />
@@ -98,12 +104,12 @@ const handleSubmit = async () => {
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">{{ t('auth.login.passwordLabel') }}</label>
           <input
             id="password"
             v-model="password"
             type="password"
-            placeholder="Enter your password"
+            :placeholder="t('auth.login.passwordPlaceholder')"
             :disabled="isLoading"
             :class="{ error: errors.password }"
           />
@@ -111,8 +117,8 @@ const handleSubmit = async () => {
         </div>
 
         <button type="submit" :disabled="isLoading" class="submit-button">
-          <span v-if="isLoading">Signing in...</span>
-          <span v-else>Sign in</span>
+          <span v-if="isLoading">{{ t('auth.login.signingIn') }}</span>
+          <span v-else>{{ t('auth.login.signIn') }}</span>
         </button>
       </form>
     </div>
@@ -123,10 +129,19 @@ const handleSubmit = async () => {
 .login-container {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 1rem;
+  position: relative;
+}
+
+.language-selector-wrapper {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
 }
 
 .login-card {

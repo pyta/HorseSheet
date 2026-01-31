@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { balanceService } from '@/services/balance.service';
 import { contactPersonService } from '@/services/contact-person.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const balances = ref<Balance[]>([]);
 const contactPersons = ref<ContactPerson[]>([]);
 const loading = ref(false);
@@ -33,7 +35,7 @@ async function loadBalances() {
     const data = await balanceService.findAll();
     balances.value = Array.isArray(data) ? data.filter((b) => !b.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load balances');
+    uiStore.showError(error.message || t('balances.loadError'));
     balances.value = [];
   } finally {
     loading.value = false;
@@ -46,21 +48,21 @@ function getContactPersonName(contactPersonId: string): string {
 }
 
 function formatBalance(balance: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('pl-PL', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'PLN',
     minimumFractionDigits: 2,
   }).format(balance);
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this balance?', { title: 'Delete Balance', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('common.messages.confirmDelete'), { title: t('balances.title'), confirmText: t('common.buttons.delete') })) {
     try {
       await balanceService.delete(id);
-      uiStore.showSuccess('Balance deleted successfully');
+      uiStore.showSuccess(t('balances.deleted'));
       await loadBalances();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete balance');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -70,8 +72,8 @@ async function handleDelete(id: string) {
   <div class="balances-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Balances</h2>
-        <router-link v-if="isAdmin" to="/admin/balances/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('balances.title') }}</h2>
+        <router-link v-if="isAdmin" to="/admin/balances/new" class="btn btn-primary">{{ t('balances.list.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -80,16 +82,16 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Contact Person</th>
-                <th>Balance</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-                <th v-if="isAdmin">Actions</th>
+                <th>{{ t('common.labels.contactPerson') }}</th>
+                <th>{{ t('common.labels.balance') }}</th>
+                <th>{{ t('common.labels.createdAt') }}</th>
+                <th>{{ t('common.labels.updatedAt') }}</th>
+                <th v-if="isAdmin">{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="balances.length === 0">
-                <td :colspan="isAdmin ? 5 : 4" style="text-align: center; padding: 2rem; color: #7f8c8d">No balances found.</td>
+                <td :colspan="isAdmin ? 5 : 4" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noBalancesFound') }}</td>
               </tr>
               <tr v-for="b in balances" :key="b.id">
                 <td>{{ b.contactPerson?.name || getContactPersonName(b.contactPersonId) }}</td>
@@ -100,8 +102,8 @@ async function handleDelete(id: string) {
                 <td>{{ new Date(b.updatedAt).toLocaleDateString() }}</td>
                 <td v-if="isAdmin">
                   <div class="table-actions">
-                    <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(b.id)">Delete</button>
+                    <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(b.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -111,7 +113,7 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="balances.length === 0" class="mobile-view empty-state">
-          <p>No balances found.</p>
+          <p>{{ t('common.labels.noBalancesFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="b in balances" :key="b.id" class="data-tile">
@@ -123,17 +125,17 @@ async function handleDelete(id: string) {
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Created:</span>
+                <span class="tile-label">{{ t('common.labels.createdAt') }}:</span>
                 <span class="tile-value">{{ new Date(b.createdAt).toLocaleDateString() }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Updated:</span>
+                <span class="tile-label">{{ t('common.labels.updatedAt') }}:</span>
                 <span class="tile-value">{{ new Date(b.updatedAt).toLocaleDateString() }}</span>
               </div>
             </div>
             <div v-if="isAdmin" class="tile-actions">
-              <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(b.id)">Delete</button>
+              <router-link :to="`/admin/balances/${b.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(b.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

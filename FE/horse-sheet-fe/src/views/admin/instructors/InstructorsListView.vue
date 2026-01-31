@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { instructorService } from '@/services/instructor.service';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const instructors = ref<Instructor[]>([]);
 const stables = ref<Stable[]>([]);
 const loading = ref(false);
@@ -32,7 +34,7 @@ async function loadInstructors() {
     const data = await instructorService.findAll();
     instructors.value = Array.isArray(data) ? data.filter((i) => !i.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load instructors');
+    uiStore.showError(error.message || t('instructors.loadError'));
     instructors.value = [];
   } finally {
     loading.value = false;
@@ -45,13 +47,13 @@ function getStableName(stableId: string): string {
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this instructor?', { title: 'Delete Instructor', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('common.messages.confirmDelete'), { title: t('instructors.title'), confirmText: t('common.buttons.delete') })) {
     try {
       await instructorService.delete(id);
-      uiStore.showSuccess('Instructor deleted successfully');
+      uiStore.showSuccess(t('instructors.deleted'));
       await loadInstructors();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete instructor');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -61,8 +63,8 @@ async function handleDelete(id: string) {
   <div class="instructors-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Instructors</h2>
-        <router-link to="/admin/instructors/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('instructors.title') }}</h2>
+        <router-link to="/admin/instructors/new" class="btn btn-primary">{{ t('instructors.list.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -71,24 +73,24 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Stable</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.name') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="instructors.length === 0">
-                <td colspan="4" style="text-align: center; padding: 2rem; color: #7f8c8d">No instructors found.</td>
+                <td colspan="4" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noInstructorsFound') }}</td>
               </tr>
               <tr v-for="i in instructors" :key="i.id">
                 <td>{{ i.name }}</td>
                 <td>{{ getStableName(i.stableId) }}</td>
-                <td>{{ i.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ i.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/instructors/${i.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(i.id)">Delete</button>
+                    <router-link :to="`/admin/instructors/${i.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(i.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -98,25 +100,25 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="instructors.length === 0" class="mobile-view empty-state">
-          <p>No instructors found.</p>
+          <p>{{ t('common.labels.noInstructorsFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="i in instructors" :key="i.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ i.name }}</h3>
               <span :class="['tile-badge', i.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ i.isActive ? 'Active' : 'Inactive' }}
+                {{ i.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(i.stableId) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/instructors/${i.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(i.id)">Delete</button>
+              <router-link :to="`/admin/instructors/${i.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(i.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

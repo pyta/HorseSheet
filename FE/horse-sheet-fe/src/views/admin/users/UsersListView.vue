@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { userService } from '@/services/user.service';
 import { useUIStore } from '@/stores/ui';
 import { useConfirm } from '@/composables/useConfirm';
@@ -10,6 +11,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 const router = useRouter();
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 
 const users = ref<User[]>([]);
 const loading = ref(false);
@@ -26,7 +28,7 @@ async function loadUsers() {
     // Filter out soft-deleted items
     users.value = Array.isArray(data) ? data.filter((u) => !u.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load users');
+    uiStore.showError(error.message || t('users.loadError'));
     users.value = [];
   } finally {
     loading.value = false;
@@ -34,18 +36,18 @@ async function loadUsers() {
 }
 
 async function handleDelete(id: string) {
-  const confirmed = await confirm.confirm('Are you sure you want to delete this user?', {
-    title: 'Delete User',
-    confirmText: 'Delete',
+  const confirmed = await confirm.confirm(t('common.messages.confirmDelete'), {
+    title: t('users.title'),
+    confirmText: t('common.buttons.delete'),
   });
 
   if (confirmed) {
     try {
       await userService.delete(id);
-      uiStore.showSuccess('User deleted successfully');
+      uiStore.showSuccess(t('users.deleted'));
       await loadUsers();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete user');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -69,8 +71,8 @@ function getRoles(user: User): string {
   <div class="users-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Users</h2>
-        <router-link to="/admin/users/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('users.title') }}</h2>
+        <router-link to="/admin/users/new" class="btn btn-primary">{{ t('users.list.createNew') }}</router-link>
       </div>
 
       <div v-if="loading" class="loading">
@@ -83,30 +85,30 @@ function getRoles(user: User): string {
           <table class="table">
             <thead>
               <tr>
-                <th>Email</th>
-                <th>Name</th>
-                <th>Roles</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.email') }}</th>
+                <th>{{ t('common.labels.name') }}</th>
+                <th>{{ t('common.labels.roles') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="users.length === 0">
                 <td colspan="5" style="text-align: center; padding: 2rem; color: #7f8c8d">
-                  No users found. Create your first user to get started.
+                  {{ t('common.labels.noUsersFound') }} {{ t('common.labels.createFirst') }}
                 </td>
               </tr>
               <tr v-for="user in users" :key="user.id">
                 <td>{{ user.email }}</td>
                 <td>{{ getFullName(user) }}</td>
                 <td>{{ getRoles(user) }}</td>
-                <td>{{ user.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ user.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
                     <router-link :to="`/admin/users/${user.id}`" class="btn btn-secondary">
-                      Edit
+                      {{ t('common.buttons.edit') }}
                     </router-link>
-                    <button class="btn btn-danger" @click="handleDelete(user.id)">Delete</button>
+                    <button class="btn btn-danger" @click="handleDelete(user.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -116,29 +118,29 @@ function getRoles(user: User): string {
 
         <!-- Mobile Tile View -->
         <div v-if="users.length === 0" class="mobile-view empty-state">
-          <p>No users found. Create your first user to get started.</p>
+          <p>{{ t('common.labels.noUsersFound') }} {{ t('common.labels.createFirst') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="user in users" :key="user.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ getFullName(user) || user.email }}</h3>
               <span :class="['tile-badge', user.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ user.isActive ? 'Active' : 'Inactive' }}
+                {{ user.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Email:</span>
+                <span class="tile-label">{{ t('common.labels.email') }}:</span>
                 <span class="tile-value">{{ user.email }}</span>
               </div>
               <div class="tile-row" v-if="getRoles(user) !== '-'">
-                <span class="tile-label">Roles:</span>
+                <span class="tile-label">{{ t('common.labels.roles') }}:</span>
                 <span class="tile-value">{{ getRoles(user) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/users/${user.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(user.id)">Delete</button>
+              <router-link :to="`/admin/users/${user.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(user.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { roleService } from '@/services/role.service';
 import { useUIStore } from '@/stores/ui';
 import type { Role } from '@/types';
 
 const uiStore = useUIStore();
+const { t } = useI18n();
 
 const roles = ref<Role[]>([]);
 const loading = ref(false);
@@ -19,7 +21,7 @@ async function loadRoles() {
     const data = await roleService.findAll();
     roles.value = Array.isArray(data) ? data.filter((r) => !r.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load roles');
+    uiStore.showError(error.message || t('roles.loadError'));
     roles.value = [];
   } finally {
     loading.value = false;
@@ -31,7 +33,7 @@ async function loadRoles() {
   <div class="roles-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Roles</h2>
+        <h2 class="card-title">{{ t('roles.title') }}</h2>
       </div>
 
       <div v-if="loading" class="loading">
@@ -44,15 +46,15 @@ async function loadRoles() {
           <table class="table">
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th>{{ t('common.labels.code') }}</th>
+                <th>{{ t('common.labels.name') }}</th>
+                <th>{{ t('common.labels.description') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="roles.length === 0">
                 <td colspan="3" style="text-align: center; padding: 2rem; color: #7f8c8d">
-                  No roles found.
+                  {{ t('common.labels.noRolesFound') }}
                 </td>
               </tr>
               <tr v-for="role in roles" :key="role.id">
@@ -68,7 +70,7 @@ async function loadRoles() {
 
         <!-- Mobile Tile View -->
         <div v-if="roles.length === 0" class="mobile-view empty-state">
-          <p>No roles found.</p>
+          <p>{{ t('common.labels.noRolesFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="role in roles" :key="role.id" class="data-tile">
@@ -78,7 +80,7 @@ async function loadRoles() {
             </div>
             <div class="tile-content">
               <div class="tile-row" v-if="role.description">
-                <span class="tile-label">Description:</span>
+                <span class="tile-label">{{ t('common.labels.description') }}:</span>
                 <span class="tile-value">{{ role.description }}</span>
               </div>
             </div>

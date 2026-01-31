@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { serviceService } from '@/services/service.service';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import type { Service, CreateServiceDto, UpdateServiceDto, Stable } from '@/type
 const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
+const { t } = useI18n();
 
 const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
@@ -37,7 +39,7 @@ async function loadStables() {
     stables.value = await stableService.findAll();
     stables.value = stables.value.filter((s) => !s.deletedAt);
   } catch (error: any) {
-    uiStore.showError('Failed to load stables');
+    uiStore.showError(t('stables.loadError'));
   }
 }
 
@@ -53,7 +55,7 @@ async function loadService() {
     };
     version.value = service.version;
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load service');
+    uiStore.showError(error.message || t('services.loadError'));
     router.push('/admin/services');
   } finally {
     loading.value = false;
@@ -64,12 +66,12 @@ function validate(): boolean {
   errors.value = {};
 
   if (!form.value.name || form.value.name.trim() === '') {
-    errors.value.name = 'Name is required';
+    errors.value.name = t('validation.name.required');
     return false;
   }
 
   if (!form.value.stableId) {
-    errors.value.stableId = 'Stable is required';
+    errors.value.stableId = t('validation.stable.required');
     return false;
   }
 
@@ -91,25 +93,23 @@ async function handleSubmit() {
         version: version.value,
       };
       await serviceService.update(route.params.id as string, updateData);
-      uiStore.showSuccess('Service updated successfully');
+      uiStore.showSuccess(t('services.updated'));
     } else {
       await serviceService.create(form.value);
-      uiStore.showSuccess('Service created successfully');
+      uiStore.showSuccess(t('services.created'));
     }
 
     router.push('/admin/services');
   } catch (error: any) {
     if (error.status === 409) {
-      uiStore.showError(
-        'This service has been modified by another user. Please refresh and try again.'
-      );
+      uiStore.showError(t('common.messages.versionConflict'));
       if (isEdit.value) {
         await loadService();
       }
     } else if (error.errors) {
       errors.value = error.errors;
     } else {
-      uiStore.showError(error.message || 'Failed to save service');
+      uiStore.showError(error.message || t('services.saveError'));
     }
   } finally {
     submitting.value = false;
@@ -121,8 +121,8 @@ async function handleSubmit() {
   <div class="service-form">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ isEdit ? 'Edit Service' : 'Create New Service' }}</h2>
-        <router-link to="/admin/services" class="btn btn-secondary">Back to List</router-link>
+        <h2 class="card-title">{{ isEdit ? t('services.form.editTitle') : t('services.form.createTitle') }}</h2>
+        <router-link to="/admin/services" class="btn btn-secondary">{{ t('common.buttons.backToList') }}</router-link>
       </div>
 
       <div v-if="loading" class="loading">
@@ -131,37 +131,37 @@ async function handleSubmit() {
 
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label class="form-label required" for="name">Name</label>
+          <label class="form-label required" for="name">{{ t('common.labels.name') }}</label>
           <input
             id="name"
             v-model="form.name"
             type="text"
             class="form-input"
             :class="{ 'has-error': errors.name }"
-            placeholder="Enter service name"
+            :placeholder="t('services.form.namePlaceholder')"
           />
           <span v-if="errors.name" class="form-error">{{ errors.name }}</span>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="description">Description</label>
+          <label class="form-label" for="description">{{ t('common.labels.description') }}</label>
           <textarea
             id="description"
             v-model="form.description"
             class="form-textarea"
-            placeholder="Enter description"
+            :placeholder="t('common.labels.description')"
           ></textarea>
         </div>
 
         <div class="form-group">
-          <label class="form-label required" for="stableId">Stable</label>
+          <label class="form-label required" for="stableId">{{ t('common.labels.stable') }}</label>
           <select
             id="stableId"
             v-model="form.stableId"
             class="form-select"
             :class="{ 'has-error': errors.stableId }"
           >
-            <option value="">Select a stable</option>
+            <option value="">{{ t('common.labels.selectStable') }}</option>
             <option v-for="stable in stables" :key="stable.id" :value="stable.id">
               {{ stable.name }}
             </option>
@@ -177,15 +177,15 @@ async function handleSubmit() {
               type="checkbox"
               style="margin-right: 0.5rem"
             />
-            Active
+            {{ t('common.labels.active') }}
           </label>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" :disabled="submitting">
-            {{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}
+            {{ submitting ? t('common.buttons.saving') : isEdit ? t('common.buttons.update') : t('common.buttons.create') }}
           </button>
-          <router-link to="/admin/services" class="btn btn-secondary">Cancel</router-link>
+          <router-link to="/admin/services" class="btn btn-secondary">{{ t('common.buttons.cancel') }}</router-link>
         </div>
       </form>
     </div>

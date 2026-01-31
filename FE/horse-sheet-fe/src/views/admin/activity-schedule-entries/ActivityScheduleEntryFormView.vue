@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { activityScheduleEntryService } from '@/services/activity-schedule-entry.service';
 import { stableService } from '@/services/stable.service';
 import { activityService } from '@/services/activity.service';
@@ -12,6 +13,7 @@ import type { CreateActivityScheduleEntryDto, UpdateActivityScheduleEntryDto, St
 const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
+const { t } = useI18n();
 const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
 const submitting = ref(false);
@@ -93,31 +95,31 @@ async function loadEntry() {
 function validate(): boolean {
   errors.value = {};
   if (!form.value.stableId) {
-    errors.value.stableId = 'Stable is required';
+    errors.value.stableId = t('validation.stable.required');
     return false;
   }
   if (!form.value.date) {
-    errors.value.date = 'Date is required';
+    errors.value.date = t('validation.date.required');
     return false;
   }
   if (!form.value.time) {
-    errors.value.time = 'Time is required';
+    errors.value.time = t('validation.time.required');
     return false;
   }
   if (!form.value.duration || form.value.duration <= 0) {
-    errors.value.duration = 'Duration must be greater than 0';
+    errors.value.duration = t('validation.duration.mustBeGreaterThanZero');
     return false;
   }
   if (!form.value.instructorId) {
-    errors.value.instructorId = 'Instructor is required';
+    errors.value.instructorId = t('validation.instructor.required');
     return false;
   }
   if (!form.value.activityId) {
-    errors.value.activityId = 'Activity is required';
+    errors.value.activityId = t('validation.activity.required');
     return false;
   }
   if (!form.value.participantIds || form.value.participantIds.length === 0) {
-    errors.value.participantIds = 'At least one participant is required';
+    errors.value.participantIds = t('validation.participantIds.atLeastOneRequired');
     return false;
   }
   return true;
@@ -130,20 +132,20 @@ async function handleSubmit() {
     errors.value = {};
     if (isEdit.value) {
       await activityScheduleEntryService.update(route.params.id as string, { ...form.value, version: version.value });
-      uiStore.showSuccess('Entry updated successfully');
+      uiStore.showSuccess(t('schedule.entry.updated'));
     } else {
       await activityScheduleEntryService.create(form.value);
-      uiStore.showSuccess('Entry created successfully');
+      uiStore.showSuccess(t('schedule.entry.created'));
     }
     router.push('/admin/activity-schedule-entries');
   } catch (error: any) {
     if (error.status === 409) {
-      uiStore.showError('This entry has been modified by another user. Please refresh and try again.');
+      uiStore.showError(t('common.messages.versionConflict'));
       if (isEdit.value) await loadEntry();
     } else if (error.errors) {
       errors.value = error.errors;
     } else {
-      uiStore.showError(error.message || 'Failed to save entry');
+      uiStore.showError(error.message || t('schedule.entry.loadError'));
     }
   } finally {
     submitting.value = false;
@@ -164,52 +166,52 @@ function toggleParticipant(id: string) {
   <div class="activity-schedule-entry-form">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ isEdit ? 'Edit Activity Schedule Entry' : 'Create New Activity Schedule Entry' }}</h2>
-        <router-link to="/admin/activity-schedule-entries" class="btn btn-secondary">Back to List</router-link>
+        <h2 class="card-title">{{ isEdit ? t('schedule.activityEntry.editTitle') : t('schedule.activityEntry.createTitle') }}</h2>
+        <router-link to="/admin/activity-schedule-entries" class="btn btn-secondary">{{ t('common.buttons.backToList') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label class="form-label required" for="stableId">Stable</label>
+          <label class="form-label required" for="stableId">{{ t('common.labels.stable') }}</label>
           <select id="stableId" v-model="form.stableId" class="form-select" :class="{ 'has-error': errors.stableId }" @change="form.activityId = ''; form.instructorId = ''; form.participantIds = []">
-            <option value="">Select a stable</option>
+            <option value="">{{ t('common.labels.selectStable') }}</option>
             <option v-for="stable in stables" :key="stable.id" :value="stable.id">{{ stable.name }}</option>
           </select>
           <span v-if="errors.stableId" class="form-error">{{ errors.stableId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="date">Date</label>
+          <label class="form-label required" for="date">{{ t('common.labels.date') }}</label>
           <input id="date" v-model="form.date" type="date" class="form-input" :class="{ 'has-error': errors.date }" />
           <span v-if="errors.date" class="form-error">{{ errors.date }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="time">Time</label>
+          <label class="form-label required" for="time">{{ t('common.labels.time') }}</label>
           <input id="time" v-model="form.time" type="time" class="form-input" :class="{ 'has-error': errors.time }" />
           <span v-if="errors.time" class="form-error">{{ errors.time }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="duration">Duration (minutes)</label>
+          <label class="form-label required" for="duration">{{ t('common.labels.duration') }} ({{ t('common.labels.minutesShort') }})</label>
           <input id="duration" v-model.number="form.duration" type="number" min="1" class="form-input" :class="{ 'has-error': errors.duration }" />
           <span v-if="errors.duration" class="form-error">{{ errors.duration }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="instructorId">Instructor</label>
+          <label class="form-label required" for="instructorId">{{ t('common.labels.instructor') }}</label>
           <select id="instructorId" v-model="form.instructorId" class="form-select" :class="{ 'has-error': errors.instructorId }" :disabled="!form.stableId">
-            <option value="">Select an instructor</option>
+            <option value="">{{ t('common.labels.selectInstructor') }}</option>
             <option v-for="instructor in filteredInstructors" :key="instructor.id" :value="instructor.id">{{ instructor.name }}</option>
           </select>
           <span v-if="errors.instructorId" class="form-error">{{ errors.instructorId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="activityId">Activity</label>
+          <label class="form-label required" for="activityId">{{ t('common.labels.activity') }}</label>
           <select id="activityId" v-model="form.activityId" class="form-select" :class="{ 'has-error': errors.activityId }" :disabled="!form.stableId">
-            <option value="">Select an activity</option>
+            <option value="">{{ t('common.labels.selectActivity') }}</option>
             <option v-for="activity in filteredActivities" :key="activity.id" :value="activity.id">{{ activity.name }}</option>
           </select>
           <span v-if="errors.activityId" class="form-error">{{ errors.activityId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required">Participants</label>
+          <label class="form-label required">{{ t('common.labels.participants') }}</label>
           <div class="participants-list" :class="{ 'has-error': errors.participantIds }">
             <label v-for="p in filteredParticipants" :key="p.id" class="checkbox-label">
               <input type="checkbox" :checked="form.participantIds.includes(p.id)" @change="toggleParticipant(p.id)" />
@@ -221,12 +223,12 @@ function toggleParticipant(id: string) {
         <div class="form-group">
           <label class="form-label" for="isActive">
             <input id="isActive" v-model="form.isActive" type="checkbox" style="margin-right: 0.5rem" />
-            Active
+            {{ t('common.labels.active') }}
           </label>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}</button>
-          <router-link to="/admin/activity-schedule-entries" class="btn btn-secondary">Cancel</router-link>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? t('common.buttons.saving') : isEdit ? t('common.buttons.update') : t('common.buttons.create') }}</button>
+          <router-link to="/admin/activity-schedule-entries" class="btn btn-secondary">{{ t('common.buttons.cancel') }}</router-link>
         </div>
       </form>
     </div>

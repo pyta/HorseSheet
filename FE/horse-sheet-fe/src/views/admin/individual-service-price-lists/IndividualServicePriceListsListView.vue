@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { individualServicePriceListService } from '@/services/individual-service-price-list.service';
 import { stableService } from '@/services/stable.service';
 import { serviceService } from '@/services/service.service';
@@ -11,6 +12,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const priceLists = ref<IndividualServicePriceList[]>([]);
 const stables = ref<Stable[]>([]);
 const services = ref<Service[]>([]);
@@ -54,7 +56,7 @@ async function loadPriceLists() {
     const data = await individualServicePriceListService.findAll();
     priceLists.value = Array.isArray(data) ? data.filter((p) => !p.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load individual service price lists');
+    uiStore.showError(error.message || t('priceLists.individualService.loadError'));
     priceLists.value = [];
   } finally {
     loading.value = false;
@@ -85,13 +87,13 @@ function formatPrice(price: number | string | null | undefined): string {
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this price list?', { title: 'Delete Price List', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('common.messages.confirmDelete'), { title: t('priceLists.individualService.title'), confirmText: t('common.buttons.delete') })) {
     try {
       await individualServicePriceListService.delete(id);
-      uiStore.showSuccess('Price list deleted successfully');
+      uiStore.showSuccess(t('priceLists.individualService.deleted'));
       await loadPriceLists();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete price list');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -101,8 +103,8 @@ async function handleDelete(id: string) {
   <div class="individual-service-price-lists-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Individual Service Price Lists</h2>
-        <router-link to="/admin/individual-service-price-lists/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('priceLists.individualService.list.title') }}</h2>
+        <router-link to="/admin/individual-service-price-lists/new" class="btn btn-primary">{{ t('priceLists.individualService.list.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -111,17 +113,17 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Participant</th>
-                <th>Service</th>
-                <th>Price</th>
-                <th>Currency</th>
-                <th>Stable</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.participant') }}</th>
+                <th>{{ t('common.labels.service') }}</th>
+                <th>{{ t('common.labels.price') }}</th>
+                <th>{{ t('common.labels.currency') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="priceLists.length === 0">
-                <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">No price lists found.</td>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noPriceListsFound') }}</td>
               </tr>
               <tr v-for="pl in priceLists" :key="pl.id">
                 <td>{{ getParticipantName(pl.participantId) }}</td>
@@ -131,8 +133,8 @@ async function handleDelete(id: string) {
                 <td>{{ getStableName(pl.stableId) }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/individual-service-price-lists/${pl.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(pl.id)">Delete</button>
+                    <router-link :to="`/admin/individual-service-price-lists/${pl.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(pl.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -142,7 +144,7 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="priceLists.length === 0" class="mobile-view empty-state">
-          <p>No price lists found.</p>
+          <p>{{ t('common.labels.noPriceListsFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="pl in priceLists" :key="pl.id" class="data-tile">
@@ -152,17 +154,17 @@ async function handleDelete(id: string) {
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Service:</span>
+                <span class="tile-label">{{ t('common.labels.service') }}:</span>
                 <span class="tile-value">{{ getServiceName(pl.serviceId) }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(pl.stableId) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/individual-service-price-lists/${pl.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(pl.id)">Delete</button>
+              <router-link :to="`/admin/individual-service-price-lists/${pl.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(pl.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

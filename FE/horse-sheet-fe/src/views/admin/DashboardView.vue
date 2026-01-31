@@ -1,26 +1,30 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import ScheduleCalendar from '@/components/schedule/ScheduleCalendar.vue';
 
-const quickLinks = [
-  { name: 'Stables', path: '/admin/stables', icon: '🏠' },
-  { name: 'Services', path: '/admin/services', icon: '⚙️' },
-  { name: 'Participants', path: '/admin/participants', icon: '👥' },
-  { name: 'Activities', path: '/admin/activities', icon: '🏇' },
-  { name: 'Service Schedule', path: '/admin/service-schedule-entries', icon: '📅' },
-  { name: 'Activity Schedule', path: '/admin/activity-schedule-entries', icon: '📆' },
-  { name: 'Payments', path: '/admin/payments', icon: '💸' },
-  { name: 'Balances', path: '/admin/balances', icon: '💵' },
-];
+const { t } = useI18n();
+
+const quickLinks = computed(() => [
+  { name: t('navigation.stables'), path: '/admin/stables', icon: '🏠' },
+  { name: t('navigation.services'), path: '/admin/services', icon: '⚙️' },
+  { name: t('navigation.participants'), path: '/admin/participants', icon: '👥' },
+  { name: t('navigation.activities'), path: '/admin/activities', icon: '🏇' },
+  { name: t('navigation.serviceSchedule'), path: '/admin/service-schedule-entries', icon: '📅' },
+  { name: t('navigation.activitySchedule'), path: '/admin/activity-schedule-entries', icon: '📆' },
+  { name: t('navigation.payments'), path: '/admin/payments', icon: '💸' },
+  { name: t('navigation.balances'), path: '/admin/balances', icon: '💵' },
+]);
 </script>
 
 <template>
   <div class="dashboard">
-    <h1>Admin Dashboard</h1>
-    <p class="subtitle">Welcome to the HorseSheet admin panel</p>
+    <h1>{{ t('dashboard.title') }}</h1>
+    <p class="subtitle">{{ t('dashboard.subtitle') }}</p>
 
     <div class="quick-links">
-      <h2>Quick Links</h2>
+      <h2>{{ t('dashboard.quickLinks') }}</h2>
       <div class="links-grid">
         <RouterLink
           v-for="link in quickLinks"

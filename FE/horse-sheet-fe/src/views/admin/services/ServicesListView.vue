@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { serviceService } from '@/services/service.service';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
@@ -11,6 +12,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 const router = useRouter();
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 
 const services = ref<Service[]>([]);
 const stables = ref<Stable[]>([]);
@@ -35,7 +37,7 @@ async function loadServices() {
     const data = await serviceService.findAll();
     services.value = Array.isArray(data) ? data.filter((s) => !s.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load services');
+    uiStore.showError(error.message || t('services.loadError'));
     services.value = [];
   } finally {
     loading.value = false;
@@ -49,18 +51,18 @@ function getStableName(stableId: string): string {
 }
 
 async function handleDelete(id: string) {
-  const confirmed = await confirm.confirm('Are you sure you want to delete this service?', {
-    title: 'Delete Service',
-    confirmText: 'Delete',
+  const confirmed = await confirm.confirm(t('common.messages.confirmDelete'), {
+    title: t('services.title'),
+    confirmText: t('common.buttons.delete'),
   });
 
   if (confirmed) {
     try {
       await serviceService.delete(id);
-      uiStore.showSuccess('Service deleted successfully');
+      uiStore.showSuccess(t('services.deleted'));
       await loadServices();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete service');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -70,8 +72,8 @@ async function handleDelete(id: string) {
   <div class="services-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Services</h2>
-        <router-link to="/admin/services/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('services.title') }}</h2>
+        <router-link to="/admin/services/new" class="btn btn-primary">{{ t('services.list.createNew') }}</router-link>
       </div>
 
       <div v-if="loading" class="loading">
@@ -84,30 +86,30 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Stable</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.name') }}</th>
+                <th>{{ t('common.labels.description') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="services.length === 0">
                 <td colspan="5" style="text-align: center; padding: 2rem; color: #7f8c8d">
-                  No services found.
+                  {{ t('common.labels.noServicesFound') }}
                 </td>
               </tr>
               <tr v-for="service in services" :key="service.id">
                 <td>{{ service.name }}</td>
                 <td>{{ service.description || '-' }}</td>
                 <td>{{ getStableName(service.stableId) }}</td>
-                <td>{{ service.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ service.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
                     <router-link :to="`/admin/services/${service.id}`" class="btn btn-secondary">
-                      Edit
+                      {{ t('common.buttons.edit') }}
                     </router-link>
-                    <button class="btn btn-danger" @click="handleDelete(service.id)">Delete</button>
+                    <button class="btn btn-danger" @click="handleDelete(service.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -117,29 +119,29 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="services.length === 0" class="mobile-view empty-state">
-          <p>No services found.</p>
+          <p>{{ t('common.labels.noServicesFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="service in services" :key="service.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ service.name }}</h3>
               <span :class="['tile-badge', service.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ service.isActive ? 'Active' : 'Inactive' }}
+                {{ service.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row" v-if="service.description">
-                <span class="tile-label">Description:</span>
+                <span class="tile-label">{{ t('common.labels.description') }}:</span>
                 <span class="tile-value">{{ service.description }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(service.stableId) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/services/${service.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(service.id)">Delete</button>
+              <router-link :to="`/admin/services/${service.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(service.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

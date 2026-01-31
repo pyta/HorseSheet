@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { activityScheduleEntryService } from '@/services/activity-schedule-entry.service';
 import { stableService } from '@/services/stable.service';
 import { activityService } from '@/services/activity.service';
@@ -11,6 +12,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const entries = ref<ActivityScheduleEntry[]>([]);
 const stables = ref<Stable[]>([]);
 const activities = ref<Activity[]>([]);
@@ -45,7 +47,7 @@ async function loadEntries() {
     const data = await activityScheduleEntryService.findAll();
     entries.value = Array.isArray(data) ? data.filter((e) => !e.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load activity schedule entries');
+    uiStore.showError(error.message || t('schedule.entry.loadError'));
     entries.value = [];
   } finally {
     loading.value = false;
@@ -122,13 +124,13 @@ const entriesByDate = computed(() => {
 });
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this entry?', { title: 'Delete Entry', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('schedule.entry.deleteConfirm'), { title: t('schedule.entry.deleteTitle'), confirmText: t('common.buttons.delete') })) {
     try {
       await activityScheduleEntryService.delete(id);
-      uiStore.showSuccess('Entry deleted successfully');
+      uiStore.showSuccess(t('schedule.entry.deleted'));
       await loadEntries();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete entry');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -138,8 +140,8 @@ async function handleDelete(id: string) {
   <div class="activity-schedule-entries-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Activity Schedule Entries</h2>
-        <router-link to="/admin/activity-schedule-entries/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('schedule.entries.title') }}</h2>
+        <router-link to="/admin/activity-schedule-entries/new" class="btn btn-primary">{{ t('schedule.entries.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -148,19 +150,19 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Duration (min)</th>
-                <th>Activity</th>
-                <th>Instructor</th>
-                <th>Stable</th>
-                <th>Participants</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.date') }}</th>
+                <th>{{ t('common.labels.time') }}</th>
+                <th>{{ t('common.labels.durationMinutes') }}</th>
+                <th>{{ t('common.labels.activity') }}</th>
+                <th>{{ t('common.labels.instructor') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.participants') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="entries.length === 0">
-                <td colspan="8" style="text-align: center; padding: 2rem; color: #7f8c8d">No entries found.</td>
+                <td colspan="8" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noEntriesFound') }}</td>
               </tr>
               <tr v-for="entry in entries" :key="entry.id">
                 <td>{{ entry.date }}</td>
@@ -172,8 +174,8 @@ async function handleDelete(id: string) {
                 <td>{{ entry.participantIds?.length || 0 }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/activity-schedule-entries/${entry.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(entry.id)">Delete</button>
+                    <router-link :to="`/admin/activity-schedule-entries/${entry.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(entry.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -183,7 +185,7 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="entries.length === 0" class="mobile-view empty-state">
-          <p>No entries found.</p>
+          <p>{{ t('common.labels.noEntriesFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="group in entriesByDate" :key="group.date" class="date-group">

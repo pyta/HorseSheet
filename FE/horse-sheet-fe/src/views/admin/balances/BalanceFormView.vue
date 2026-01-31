@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { balanceService } from '@/services/balance.service';
 import { contactPersonService } from '@/services/contact-person.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import type { CreateBalanceDto, UpdateBalanceDto, ContactPerson } from '@/types'
 const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
+const { t } = useI18n();
 const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
 const submitting = ref(false);
@@ -45,15 +47,15 @@ async function loadBalance() {
 function validate(): boolean {
   errors.value = {};
   if (!form.value.contactPersonId) {
-    errors.value.contactPersonId = 'Contact person is required';
+    errors.value.contactPersonId = t('validation.contactPerson.required');
     return false;
   }
   if (form.value.balance === undefined || form.value.balance === null) {
-    errors.value.balance = 'Balance is required';
+    errors.value.balance = t('validation.balance.required');
     return false;
   }
   if (isNaN(form.value.balance)) {
-    errors.value.balance = 'Balance must be a valid number';
+    errors.value.balance = t('validation.balance.mustBeValidNumber');
     return false;
   }
   return true;
@@ -66,20 +68,20 @@ async function handleSubmit() {
     errors.value = {};
     if (isEdit.value) {
       await balanceService.update(route.params.id as string, { ...form.value, version: version.value });
-      uiStore.showSuccess('Balance updated successfully');
+      uiStore.showSuccess(t('balances.updated'));
     } else {
       await balanceService.create(form.value);
-      uiStore.showSuccess('Balance created successfully');
+      uiStore.showSuccess(t('balances.created'));
     }
     router.push('/admin/balances');
   } catch (error: any) {
     if (error.status === 409) {
-      uiStore.showError('This balance has been modified by another user. Please refresh and try again.');
+      uiStore.showError(t('common.messages.versionConflict'));
       if (isEdit.value) await loadBalance();
     } else if (error.errors) {
       errors.value = error.errors;
     } else {
-      uiStore.showError(error.message || 'Failed to save balance');
+      uiStore.showError(error.message || t('balances.saveError'));
     }
   } finally {
     submitting.value = false;
@@ -91,27 +93,27 @@ async function handleSubmit() {
   <div class="balance-form">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ isEdit ? 'Edit Balance' : 'Create New Balance' }}</h2>
-        <router-link to="/admin/balances" class="btn btn-secondary">Back to List</router-link>
+        <h2 class="card-title">{{ isEdit ? t('balances.form.editTitle') : t('balances.form.createTitle') }}</h2>
+        <router-link to="/admin/balances" class="btn btn-secondary">{{ t('common.buttons.backToList') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label class="form-label required" for="contactPersonId">Contact Person</label>
+          <label class="form-label required" for="contactPersonId">{{ t('common.labels.contactPerson') }}</label>
           <select id="contactPersonId" v-model="form.contactPersonId" class="form-select" :class="{ 'has-error': errors.contactPersonId }">
-            <option value="">Select a contact person</option>
+            <option value="">{{ t('common.labels.selectContactPerson') }}</option>
             <option v-for="cp in contactPersons" :key="cp.id" :value="cp.id">{{ cp.name }}</option>
           </select>
           <span v-if="errors.contactPersonId" class="form-error">{{ errors.contactPersonId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="balance">Balance</label>
-          <input id="balance" v-model.number="form.balance" type="number" step="0.01" class="form-input" :class="{ 'has-error': errors.balance }" placeholder="Enter balance amount" />
+          <label class="form-label required" for="balance">{{ t('common.labels.balance') }}</label>
+          <input id="balance" v-model.number="form.balance" type="number" step="0.01" class="form-input" :class="{ 'has-error': errors.balance }" :placeholder="t('common.labels.enterBalanceAmount')" />
           <span v-if="errors.balance" class="form-error">{{ errors.balance }}</span>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}</button>
-          <router-link to="/admin/balances" class="btn btn-secondary">Cancel</router-link>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? t('common.buttons.saving') : isEdit ? t('common.buttons.update') : t('common.buttons.create') }}</button>
+          <router-link to="/admin/balances" class="btn btn-secondary">{{ t('common.buttons.cancel') }}</router-link>
         </div>
       </form>
     </div>

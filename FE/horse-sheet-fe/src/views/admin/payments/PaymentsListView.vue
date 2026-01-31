@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { paymentService } from '@/services/payment.service';
 import { stableService } from '@/services/stable.service';
 import { contactPersonService } from '@/services/contact-person.service';
@@ -10,6 +11,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const payments = ref<Payment[]>([]);
 const stables = ref<Stable[]>([]);
 const contactPersons = ref<ContactPerson[]>([]);
@@ -43,7 +45,7 @@ async function loadPayments() {
     const data = await paymentService.findAll();
     payments.value = Array.isArray(data) ? data.filter((p) => !p.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load payments');
+    uiStore.showError(error.message || t('payments.loadError'));
     payments.value = [];
   } finally {
     loading.value = false;
@@ -68,13 +70,13 @@ function formatPrice(price: number | string | null | undefined): string {
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this payment?', { title: 'Delete Payment', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('common.messages.confirmDelete'), { title: t('payments.title'), confirmText: t('common.buttons.delete') })) {
     try {
       await paymentService.delete(id);
-      uiStore.showSuccess('Payment deleted successfully');
+      uiStore.showSuccess(t('payments.deleted'));
       await loadPayments();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete payment');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -84,8 +86,8 @@ async function handleDelete(id: string) {
   <div class="payments-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Payments</h2>
-        <router-link to="/admin/payments/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('payments.title') }}</h2>
+        <router-link to="/admin/payments/new" class="btn btn-primary">{{ t('payments.list.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -94,16 +96,16 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Contact Person</th>
-                <th>Amount</th>
-                <th>Payment Date</th>
-                <th>Stable</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.contactPerson') }}</th>
+                <th>{{ t('common.labels.amount') }}</th>
+                <th>{{ t('payments.paymentDate') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="payments.length === 0">
-                <td colspan="5" style="text-align: center; padding: 2rem; color: #7f8c8d">No payments found.</td>
+                <td colspan="5" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noPaymentsFound') }}</td>
               </tr>
               <tr v-for="payment in payments" :key="payment.id">
                 <td>{{ getContactPersonName(payment.contactPersonId) }}</td>
@@ -112,8 +114,8 @@ async function handleDelete(id: string) {
                 <td>{{ getStableName(payment.stableId) }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/payments/${payment.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(payment.id)">Delete</button>
+                    <router-link :to="`/admin/payments/${payment.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(payment.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -123,7 +125,7 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="payments.length === 0" class="mobile-view empty-state">
-          <p>No payments found.</p>
+          <p>{{ t('common.labels.noPaymentsFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="payment in payments" :key="payment.id" class="data-tile">
@@ -133,17 +135,17 @@ async function handleDelete(id: string) {
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Date:</span>
+                <span class="tile-label">{{ t('common.labels.date') }}:</span>
                 <span class="tile-value">{{ payment.paymentDate }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(payment.stableId) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/payments/${payment.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(payment.id)">Delete</button>
+              <router-link :to="`/admin/payments/${payment.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(payment.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

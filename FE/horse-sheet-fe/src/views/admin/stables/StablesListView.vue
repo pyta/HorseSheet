@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
 import { useConfirm } from '@/composables/useConfirm';
@@ -10,6 +11,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 const router = useRouter();
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 
 const stables = ref<Stable[]>([]);
 const loading = ref(false);
@@ -26,7 +28,7 @@ async function loadStables() {
     // Filter out soft-deleted items
     stables.value = Array.isArray(data) ? data.filter((s) => !s.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load stables');
+    uiStore.showError(error.message || t('stables.loadError'));
     stables.value = [];
   } finally {
     loading.value = false;
@@ -34,18 +36,18 @@ async function loadStables() {
 }
 
 async function handleDelete(id: string) {
-  const confirmed = await confirm.confirm('Are you sure you want to delete this stable?', {
-    title: 'Delete Stable',
-    confirmText: 'Delete',
+  const confirmed = await confirm.confirm(t('common.messages.confirmDelete'), {
+    title: t('stables.title'),
+    confirmText: t('common.buttons.delete'),
   });
 
   if (confirmed) {
     try {
       await stableService.delete(id);
-      uiStore.showSuccess('Stable deleted successfully');
+      uiStore.showSuccess(t('stables.deleted'));
       await loadStables();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete stable');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -55,8 +57,8 @@ async function handleDelete(id: string) {
   <div class="stables-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Stables</h2>
-        <router-link to="/admin/stables/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('stables.title') }}</h2>
+        <router-link to="/admin/stables/new" class="btn btn-primary">{{ t('stables.list.createNew') }}</router-link>
       </div>
 
       <div v-if="loading" class="loading">
@@ -69,18 +71,18 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Contact Info</th>
-                <th>Timezone</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.name') }}</th>
+                <th>{{ t('common.labels.address') }}</th>
+                <th>{{ t('common.labels.contactInfo') }}</th>
+                <th>{{ t('common.labels.timezone') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="stables.length === 0">
                 <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">
-                  No stables found. Create your first stable to get started.
+                  {{ t('common.labels.noStablesFound') }} {{ t('common.labels.createFirst') }}
                 </td>
               </tr>
               <tr v-for="stable in stables" :key="stable.id">
@@ -88,13 +90,13 @@ async function handleDelete(id: string) {
                 <td>{{ stable.address || '-' }}</td>
                 <td>{{ stable.contactInfo || '-' }}</td>
                 <td>{{ stable.timezone || '-' }}</td>
-                <td>{{ stable.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ stable.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
                     <router-link :to="`/admin/stables/${stable.id}`" class="btn btn-secondary">
-                      Edit
+                      {{ t('common.buttons.edit') }}
                     </router-link>
-                    <button class="btn btn-danger" @click="handleDelete(stable.id)">Delete</button>
+                    <button class="btn btn-danger" @click="handleDelete(stable.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -104,33 +106,33 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="stables.length === 0" class="mobile-view empty-state">
-          <p>No stables found. Create your first stable to get started.</p>
+          <p>{{ t('common.labels.noStablesFound') }} {{ t('common.labels.createFirst') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="stable in stables" :key="stable.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ stable.name }}</h3>
               <span :class="['tile-badge', stable.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ stable.isActive ? 'Active' : 'Inactive' }}
+                {{ stable.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row" v-if="stable.address">
-                <span class="tile-label">Address:</span>
+                <span class="tile-label">{{ t('common.labels.address') }}:</span>
                 <span class="tile-value">{{ stable.address }}</span>
               </div>
               <div class="tile-row" v-if="stable.contactInfo">
-                <span class="tile-label">Contact:</span>
+                <span class="tile-label">{{ t('common.labels.contactInfo') }}:</span>
                 <span class="tile-value">{{ stable.contactInfo }}</span>
               </div>
               <div class="tile-row" v-if="stable.timezone">
-                <span class="tile-label">Timezone:</span>
+                <span class="tile-label">{{ t('common.labels.timezone') }}:</span>
                 <span class="tile-value">{{ stable.timezone }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/stables/${stable.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(stable.id)">Delete</button>
+              <router-link :to="`/admin/stables/${stable.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(stable.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

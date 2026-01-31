@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { serviceScheduleEntryService } from '@/services/service-schedule-entry.service';
 import { stableService } from '@/services/stable.service';
 import { serviceService } from '@/services/service.service';
@@ -10,6 +11,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const entries = ref<ServiceScheduleEntry[]>([]);
 const stables = ref<Stable[]>([]);
 const services = ref<Service[]>([]);
@@ -37,7 +39,7 @@ async function loadEntries() {
     const data = await serviceScheduleEntryService.findAll();
     entries.value = Array.isArray(data) ? data.filter((e) => !e.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load service schedule entries');
+    uiStore.showError(error.message || t('schedule.entry.loadError'));
     entries.value = [];
   } finally {
     loading.value = false;
@@ -53,13 +55,13 @@ function getServiceName(serviceId: string): string {
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this entry?', { title: 'Delete Entry', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('schedule.entry.deleteConfirm'), { title: t('schedule.entry.deleteTitle'), confirmText: t('common.buttons.delete') })) {
     try {
       await serviceScheduleEntryService.delete(id);
-      uiStore.showSuccess('Entry deleted successfully');
+      uiStore.showSuccess(t('schedule.entry.deleted'));
       await loadEntries();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete entry');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -69,8 +71,8 @@ async function handleDelete(id: string) {
   <div class="service-schedule-entries-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Service Schedule Entries</h2>
-        <router-link to="/admin/service-schedule-entries/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('navigation.serviceSchedule') }}</h2>
+        <router-link to="/admin/service-schedule-entries/new" class="btn btn-primary">{{ t('schedule.entries.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -79,18 +81,18 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Duration</th>
-                <th>Service</th>
-                <th>Stable</th>
-                <th>Participants</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.date') }}</th>
+                <th>{{ t('common.labels.duration') }}</th>
+                <th>{{ t('common.labels.service') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.participants') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="entries.length === 0">
-                <td colspan="7" style="text-align: center; padding: 2rem; color: #7f8c8d">No entries found.</td>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noEntriesFound') }}</td>
               </tr>
               <tr v-for="entry in entries" :key="entry.id">
                 <td>{{ entry.date }}</td>
@@ -98,11 +100,11 @@ async function handleDelete(id: string) {
                 <td>{{ getServiceName(entry.serviceId) }}</td>
                 <td>{{ getStableName(entry.stableId) }}</td>
                 <td>{{ entry.participantIds?.length || 0 }}</td>
-                <td>{{ entry.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ entry.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(entry.id)">Delete</button>
+                    <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(entry.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -112,37 +114,37 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="entries.length === 0" class="mobile-view empty-state">
-          <p>No entries found.</p>
+          <p>{{ t('common.labels.noEntriesFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="entry in entries" :key="entry.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ getServiceName(entry.serviceId) }}</h3>
               <span :class="['tile-badge', entry.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ entry.isActive ? 'Active' : 'Inactive' }}
+                {{ entry.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Date:</span>
+                <span class="tile-label">{{ t('common.labels.date') }}:</span>
                 <span class="tile-value">{{ entry.date }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Duration:</span>
+                <span class="tile-label">{{ t('common.labels.duration') }}:</span>
                 <span class="tile-value">{{ entry.duration }} min</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(entry.stableId) }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Participants:</span>
+                <span class="tile-label">{{ t('common.labels.participants') }}:</span>
                 <span class="tile-value">{{ entry.participantIds?.length || 0 }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(entry.id)">Delete</button>
+              <router-link :to="`/admin/service-schedule-entries/${entry.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(entry.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

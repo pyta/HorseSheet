@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { instructorService } from '@/services/instructor.service';
 import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
@@ -9,6 +10,7 @@ import type { CreateInstructorDto, UpdateInstructorDto, Stable } from '@/types';
 const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
+const { t } = useI18n();
 const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
 const submitting = ref(false);
@@ -87,20 +89,20 @@ async function handleSubmit() {
   <div class="instructor-form">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ isEdit ? 'Edit Instructor' : 'Create New Instructor' }}</h2>
-        <router-link to="/admin/instructors" class="btn btn-secondary">Back to List</router-link>
+        <h2 class="card-title">{{ isEdit ? t('instructors.form.editTitle') : t('instructors.form.createTitle') }}</h2>
+        <router-link to="/admin/instructors" class="btn btn-secondary">{{ t('common.buttons.backToList') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <form v-else @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label class="form-label required" for="name">Name</label>
-          <input id="name" v-model="form.name" type="text" class="form-input" :class="{ 'has-error': errors.name }" placeholder="Enter name" />
+          <label class="form-label required" for="name">{{ t('common.labels.name') }}</label>
+          <input id="name" v-model="form.name" type="text" class="form-input" :class="{ 'has-error': errors.name }" :placeholder="t('instructors.form.namePlaceholder')" />
           <span v-if="errors.name" class="form-error">{{ errors.name }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label required" for="stableId">Stable</label>
+          <label class="form-label required" for="stableId">{{ t('common.labels.stable') }}</label>
           <select id="stableId" v-model="form.stableId" class="form-select" :class="{ 'has-error': errors.stableId }">
-            <option value="">Select a stable</option>
+            <option value="">{{ t('common.labels.selectStable') }}</option>
             <option v-for="stable in stables" :key="stable.id" :value="stable.id">{{ stable.name }}</option>
           </select>
           <span v-if="errors.stableId" class="form-error">{{ errors.stableId }}</span>
@@ -108,12 +110,12 @@ async function handleSubmit() {
         <div class="form-group">
           <label class="form-label" for="isActive">
             <input id="isActive" v-model="form.isActive" type="checkbox" style="margin-right: 0.5rem" />
-            Active
+            {{ t('common.labels.active') }}
           </label>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? 'Saving...' : isEdit ? 'Update' : 'Create' }}</button>
-          <router-link to="/admin/instructors" class="btn btn-secondary">Cancel</router-link>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? t('common.buttons.saving') : isEdit ? t('common.buttons.update') : t('common.buttons.create') }}</button>
+          <router-link to="/admin/instructors" class="btn btn-secondary">{{ t('common.buttons.cancel') }}</router-link>
         </div>
       </form>
     </div>

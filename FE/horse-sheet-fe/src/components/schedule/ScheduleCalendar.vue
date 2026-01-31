@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import plLocale from '@fullcalendar/core/locales/pl';
+import enLocale from '@fullcalendar/core/locales/en-gb';
 import type { EventInput } from '@fullcalendar/core';
 
 import { activityScheduleEntryService } from '@/services/activity-schedule-entry.service';
@@ -19,8 +22,11 @@ import type {
   Service,
 } from '@/types';
 import { useUIStore } from '@/stores/ui';
+import { useLanguageStore } from '@/stores/language';
 
 const uiStore = useUIStore();
+const { t } = useI18n();
+const languageStore = useLanguageStore();
 
 // Define plugins array - must be defined after imports
 const plugins = [dayGridPlugin, timeGridPlugin, interactionPlugin];
@@ -63,7 +69,7 @@ const calendarEvents = computed<EventInput[]>(() => {
 
       events.push({
         id: `activity-${entry.id}`,
-        title: activity?.name || 'Activity',
+        title: activity?.name || t('common.labels.activity'),
         start: startDate.toISOString(),
         end: endDate.toISOString(),
         extendedProps: {
@@ -111,7 +117,7 @@ const calendarEvents = computed<EventInput[]>(() => {
 
       events.push({
         id: `service-${entry.id}`,
-        title: service?.name || 'Service',
+        title: service?.name || t('common.labels.service'),
         start: startDate.toISOString(),
         end: endDate.toISOString(),
         allDay: true,
@@ -198,7 +204,7 @@ async function loadData() {
     activities.value = activitiesData;
     services.value = servicesData;
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load schedule data');
+    uiStore.showError(error.message || t('schedule.entry.loadError'));
   } finally {
     loading.value = false;
   }
@@ -208,10 +214,18 @@ async function loadData() {
 const calendarOptions = computed(() => ({
   plugins: plugins,
   initialView: 'dayGridMonth',
+  locale: languageStore.currentLanguage === 'pl' ? plLocale : enLocale,
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
     right: 'dayGridMonth,timeGridWeek,timeGridDay',
+  },
+  buttonText: {
+    today: t('common.buttons.today'),
+    month: t('common.buttons.month'),
+    week: t('common.buttons.week'),
+    day: t('common.buttons.day'),
+    list: t('common.buttons.list'),
   },
   events: calendarEvents.value,
   eventContent: renderEventContent,
@@ -228,15 +242,15 @@ onMounted(() => {
 <template>
   <div class="schedule-calendar">
     <div class="calendar-toolbox">
-      <h2>Schedule Preview</h2>
+      <h2>{{ t('schedule.preview') }}</h2>
       <div class="visibility-controls">
         <label class="checkbox-label">
           <input type="checkbox" v-model="showServices" />
-          <span>Show Services</span>
+          <span>{{ t('schedule.showServices') }}</span>
         </label>
         <label class="checkbox-label">
           <input type="checkbox" v-model="showActivities" />
-          <span>Show Activities</span>
+          <span>{{ t('schedule.showActivities') }}</span>
         </label>
       </div>
     </div>

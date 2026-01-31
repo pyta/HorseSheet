@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { servicePriceListService } from '@/services/service-price-list.service';
 import { stableService } from '@/services/stable.service';
 import { serviceService } from '@/services/service.service';
@@ -10,6 +11,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 
 const uiStore = useUIStore();
 const confirm = useConfirm();
+const { t } = useI18n();
 const priceLists = ref<ServicePriceList[]>([]);
 const stables = ref<Stable[]>([]);
 const services = ref<Service[]>([]);
@@ -43,7 +45,7 @@ async function loadPriceLists() {
     const data = await servicePriceListService.findAll();
     priceLists.value = Array.isArray(data) ? data.filter((p) => !p.deletedAt) : [];
   } catch (error: any) {
-    uiStore.showError(error.message || 'Failed to load service price lists');
+    uiStore.showError(error.message || t('priceLists.service.loadError'));
     priceLists.value = [];
   } finally {
     loading.value = false;
@@ -68,13 +70,13 @@ function formatPrice(price: number | string | null | undefined): string {
 }
 
 async function handleDelete(id: string) {
-  if (await confirm.confirm('Are you sure you want to delete this price list?', { title: 'Delete Price List', confirmText: 'Delete' })) {
+  if (await confirm.confirm(t('common.messages.confirmDelete'), { title: t('priceLists.service.title'), confirmText: t('common.buttons.delete') })) {
     try {
       await servicePriceListService.delete(id);
-      uiStore.showSuccess('Price list deleted successfully');
+      uiStore.showSuccess(t('priceLists.service.deleted'));
       await loadPriceLists();
     } catch (error: any) {
-      uiStore.showError(error.message || 'Failed to delete price list');
+      uiStore.showError(error.message || t('common.messages.deleteError'));
     }
   }
 }
@@ -84,8 +86,8 @@ async function handleDelete(id: string) {
   <div class="service-price-lists-list">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">Service Price Lists</h2>
-        <router-link to="/admin/service-price-lists/new" class="btn btn-primary">Create New</router-link>
+        <h2 class="card-title">{{ t('priceLists.service.list.title') }}</h2>
+        <router-link to="/admin/service-price-lists/new" class="btn btn-primary">{{ t('priceLists.service.list.createNew') }}</router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -94,28 +96,28 @@ async function handleDelete(id: string) {
           <table class="table">
             <thead>
               <tr>
-                <th>Service</th>
-                <th>Price</th>
-                <th>Currency</th>
-                <th>Stable</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{{ t('common.labels.service') }}</th>
+                <th>{{ t('common.labels.price') }}</th>
+                <th>{{ t('common.labels.currency') }}</th>
+                <th>{{ t('common.labels.stable') }}</th>
+                <th>{{ t('common.labels.active') }}</th>
+                <th>{{ t('common.labels.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="priceLists.length === 0">
-                <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">No price lists found.</td>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #7f8c8d">{{ t('common.labels.noPriceListsFound') }}</td>
               </tr>
               <tr v-for="pl in priceLists" :key="pl.id">
                 <td>{{ getServiceName(pl.serviceId) }}</td>
                 <td>{{ formatPrice(pl.price) }}</td>
                 <td>{{ pl.currency }}</td>
                 <td>{{ getStableName(pl.stableId) }}</td>
-                <td>{{ pl.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ pl.isActive ? t('common.labels.yes') : t('common.labels.no') }}</td>
                 <td>
                   <div class="table-actions">
-                    <router-link :to="`/admin/service-price-lists/${pl.id}`" class="btn btn-secondary">Edit</router-link>
-                    <button class="btn btn-danger" @click="handleDelete(pl.id)">Delete</button>
+                    <router-link :to="`/admin/service-price-lists/${pl.id}`" class="btn btn-secondary">{{ t('common.buttons.edit') }}</router-link>
+                    <button class="btn btn-danger" @click="handleDelete(pl.id)">{{ t('common.buttons.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -125,29 +127,29 @@ async function handleDelete(id: string) {
 
         <!-- Mobile Tile View -->
         <div v-if="priceLists.length === 0" class="mobile-view empty-state">
-          <p>No price lists found.</p>
+          <p>{{ t('common.labels.noPriceListsFound') }}</p>
         </div>
         <div v-else class="mobile-view mobile-tiles">
           <div v-for="pl in priceLists" :key="pl.id" class="data-tile">
             <div class="tile-header">
               <h3 class="tile-title">{{ getServiceName(pl.serviceId) }}</h3>
               <span :class="['tile-badge', pl.isActive ? 'badge-active' : 'badge-inactive']">
-                {{ pl.isActive ? 'Active' : 'Inactive' }}
+                {{ pl.isActive ? t('common.labels.active') : t('common.labels.inactive') }}
               </span>
             </div>
             <div class="tile-content">
               <div class="tile-row">
-                <span class="tile-label">Price:</span>
+                <span class="tile-label">{{ t('common.labels.price') }}:</span>
                 <span class="tile-value tile-price">{{ formatPrice(pl.price) }} {{ pl.currency }}</span>
               </div>
               <div class="tile-row">
-                <span class="tile-label">Stable:</span>
+                <span class="tile-label">{{ t('common.labels.stable') }}:</span>
                 <span class="tile-value">{{ getStableName(pl.stableId) }}</span>
               </div>
             </div>
             <div class="tile-actions">
-              <router-link :to="`/admin/service-price-lists/${pl.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(pl.id)">Delete</button>
+              <router-link :to="`/admin/service-price-lists/${pl.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(pl.id)">{{ t('common.buttons.delete') }}</button>
             </div>
           </div>
         </div>

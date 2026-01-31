@@ -1,0 +1,539 @@
+{
+  "common": {
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "back": "Back",
+      "backToList": "Back to List",
+      "submit": "Submit",
+      "close": "Close",
+      "confirm": "Confirm",
+      "export": "Export",
+      "import": "Import",
+      "search": "Search",
+      "filter": "Filter",
+      "reset": "Reset",
+      "loading": "Loading...",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "logout": "Logout",
+      "update": "Update",
+      "saving": "Saving...",
+      "today": "Today",
+      "month": "Month",
+      "week": "Week",
+      "day": "Day",
+      "list": "List"
+    },
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "phone": "Phone",
+      "active": "Active",
+      "inactive": "Inactive",
+      "createdAt": "Created at",
+      "updatedAt": "Updated at",
+      "actions": "Actions",
+      "noData": "No data",
+      "select": "Select",
+      "selectStable": "Select a stable",
+      "selectContactPerson": "Select a contact person",
+      "selectActivity": "Select an activity",
+      "selectService": "Select a service",
+      "selectInstructor": "Select an instructor",
+      "selectParticipant": "Select a participant",
+      "required": "Required",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "durationMinutes": "Duration (min)",
+      "activity": "Activity",
+      "service": "Service",
+      "instructor": "Instructor",
+      "stable": "Stable",
+      "participants": "Participants",
+      "participant": "Participant",
+      "price": "Price",
+      "currency": "Currency",
+      "address": "Address",
+      "contactInfo": "Contact Info",
+      "timezone": "Timezone",
+      "roles": "Roles",
+      "contactPerson": "Contact Person",
+      "amount": "Amount",
+      "balance": "Balance",
+      "minutesShort": "min",
+      "yes": "Yes",
+      "no": "No",
+      "noEntriesFound": "No entries found",
+      "noParticipantsFound": "No participants found",
+      "noStablesFound": "No stables found",
+      "noServicesFound": "No services found",
+      "noActivitiesFound": "No activities found",
+      "noInstructorsFound": "No instructors found",
+      "noContactPersonsFound": "No contact persons found",
+      "noUsersFound": "No users found",
+      "noPriceListsFound": "No price lists found",
+      "noPaymentsFound": "No payments found",
+      "noBalancesFound": "No balances found",
+      "noRolesFound": "No roles found",
+      "createFirst": "Create your first item to get started",
+      "description": "Description",
+      "enterDescription": "Enter description",
+      "enterEmail": "Enter email",
+      "enterPhone": "Enter phone",
+      "enterBalanceAmount": "Enter balance amount",
+      "timezoneExample": "e.g., Europe/Warsaw",
+      "durationExample": "e.g., day, month",
+      "optional": "optional",
+      "noneGeneralPrice": "None (general price)",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "enterFirstName": "Enter first name",
+      "enterLastName": "Enter last name",
+      "passwordHint": "(leave blank to keep current password)",
+      "enterNewPasswordOptional": "Enter new password (optional)",
+      "enterPassword": "Enter password",
+      "code": "Code"
+    },
+    "messages": {
+      "success": "Success",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info",
+      "confirmDelete": "Are you sure you want to delete this item?",
+      "confirmAction": "Are you sure you want to perform this action?",
+      "saved": "Saved successfully",
+      "deleted": "Deleted successfully",
+      "created": "Created successfully",
+      "updated": "Updated successfully",
+      "loadError": "Error loading data",
+      "saveError": "Error saving",
+      "deleteError": "Error deleting",
+      "networkError": "Network connection error",
+      "unauthorized": "Unauthorized",
+      "forbidden": "Forbidden",
+      "notFound": "Not found",
+      "serverError": "Server error",
+      "versionConflict": "This item has been modified by another user. Please refresh and try again."
+    }
+  },
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "subtitle": "Welcome to the HorseSheet admin panel",
+    "quickLinks": "Quick Links"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "stables": "Stables",
+    "services": "Services",
+    "contactPersons": "Contact Persons",
+    "participants": "Participants",
+    "instructors": "Instructors",
+    "activities": "Activities",
+    "serviceSchedule": "Service Schedule",
+    "activitySchedule": "Activity Schedule",
+    "servicePrices": "Service Prices",
+    "activityPrices": "Activity Prices",
+    "individualServicePrices": "Individual Service Prices",
+    "individualActivityPrices": "Individual Activity Prices",
+    "payments": "Payments",
+    "balances": "Balances",
+    "users": "Users",
+    "roles": "Roles",
+    "adminPanel": "Admin Panel"
+  },
+  "auth": {
+    "login": {
+      "title": "HorseSheet",
+      "subtitle": "Sign in to your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "success": "Login successful",
+      "failed": "Login failed. Please check your credentials."
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": {
+      "required": "Email is required",
+      "invalid": "Please enter a valid email address"
+    },
+    "password": {
+      "required": "Password is required",
+      "minLength": "Password must be at least 8 characters"
+    },
+    "name": {
+      "required": "Name is required"
+    },
+    "stable": {
+      "required": "Stable is required"
+    },
+    "contactPerson": {
+      "required": "Contact person is required"
+    },
+    "activity": {
+      "required": "Activity is required"
+    },
+    "service": {
+      "required": "Service is required"
+    },
+    "instructor": {
+      "required": "Instructor is required"
+    },
+    "participant": {
+      "required": "Participant is required"
+    },
+    "balance": {
+      "required": "Balance is required",
+      "mustBeNumber": "Balance must be a number",
+      "mustBeValidNumber": "Balance must be a valid number"
+    },
+    "date": {
+      "required": "Date is required",
+      "invalid": "Invalid date format"
+    },
+    "time": {
+      "required": "Time is required",
+      "invalid": "Invalid time format"
+    },
+    "price": {
+      "required": "Price is required",
+      "mustBeNumber": "Price must be a number",
+      "mustBePositive": "Price must be positive",
+      "mustBeGreaterThanZero": "Price must be greater than 0"
+    },
+    "duration": {
+      "required": "Duration is required",
+      "mustBeGreaterThanZero": "Duration must be greater than 0"
+    },
+    "participant": {
+      "required": "Participant is required"
+    },
+    "amount": {
+      "required": "Amount is required",
+      "mustBeGreaterThanZero": "Amount must be greater than 0"
+    },
+    "balance": {
+      "mustBeValidNumber": "Balance must be a valid number"
+    },
+    "participantIds": {
+      "atLeastOneRequired": "At least one participant is required"
+    }
+  },
+  "errors": {
+    "validation": {
+      "fieldRequired": "This field is required",
+      "invalidFormat": "Invalid format",
+      "invalidEmail": "Invalid email address",
+      "invalidNumber": "Invalid number",
+      "minLength": "Value is too short",
+      "maxLength": "Value is too long",
+      "minValue": "Value is too small",
+      "maxValue": "Value is too large"
+    },
+    "api": {
+      "networkError": "Network connection error",
+      "timeout": "Request timeout",
+      "unauthorized": "Unauthorized",
+      "forbidden": "Forbidden",
+      "notFound": "Not found",
+      "serverError": "Server error",
+      "badRequest": "Bad request",
+      "conflict": "Data conflict"
+    },
+    "generic": {
+      "somethingWentWrong": "Something went wrong",
+      "tryAgain": "Try again",
+      "contactSupport": "Contact support"
+    }
+  },
+  "schedule": {
+    "title": "Schedule",
+    "preview": "Schedule Preview",
+    "showServices": "Show Services",
+    "showActivities": "Show Activities",
+    "entries": {
+      "title": "Activity Schedule Entries",
+      "createNew": "Create New"
+    },
+    "entry": {
+      "created": "Schedule entry created successfully",
+      "updated": "Schedule entry updated successfully",
+      "deleted": "Schedule entry deleted successfully",
+      "loadError": "Error loading schedule entries",
+      "deleteConfirm": "Are you sure you want to delete this entry?",
+      "deleteTitle": "Delete Entry"
+    },
+    "activityEntry": {
+      "createTitle": "Create New Activity Schedule Entry",
+      "editTitle": "Edit Activity Schedule Entry"
+    },
+    "serviceEntry": {
+      "createTitle": "Create New Service Schedule Entry",
+      "editTitle": "Edit Service Schedule Entry"
+    },
+    "create": {
+      "title": "Create new schedule entry"
+    },
+    "edit": {
+      "title": "Edit schedule entry"
+    }
+  },
+  "participants": {
+    "title": "Participants",
+    "list": {
+      "title": "Participants List",
+      "createNew": "Create New Participant"
+    },
+    "form": {
+      "createTitle": "Create New Participant",
+      "editTitle": "Edit Participant",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter email",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "Enter phone",
+      "stableLabel": "Stable",
+      "contactPersonLabel": "Contact Person",
+      "activeLabel": "Active"
+    },
+    "created": "Participant created successfully",
+    "updated": "Participant updated successfully",
+    "deleted": "Participant deleted successfully",
+    "loadError": "Error loading participants",
+    "saveError": "Failed to save participant"
+  },
+  "stables": {
+    "title": "Stables",
+    "list": {
+      "title": "Stables List",
+      "createNew": "Create New Stable"
+    },
+    "form": {
+      "createTitle": "Create New Stable",
+      "editTitle": "Edit Stable",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter stable name"
+    },
+    "created": "Stable created successfully",
+    "updated": "Stable updated successfully",
+    "deleted": "Stable deleted successfully",
+    "loadError": "Error loading stables",
+    "saveError": "Failed to save stable"
+  },
+  "services": {
+    "title": "Services",
+    "list": {
+      "title": "Services List",
+      "createNew": "Create New Service"
+    },
+    "form": {
+      "createTitle": "Create New Service",
+      "editTitle": "Edit Service",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter service name"
+    },
+    "created": "Service created successfully",
+    "updated": "Service updated successfully",
+    "deleted": "Service deleted successfully",
+    "loadError": "Error loading services",
+    "saveError": "Failed to save service"
+  },
+  "instructors": {
+    "title": "Instructors",
+    "list": {
+      "title": "Instructors List",
+      "createNew": "Create New Instructor"
+    },
+    "form": {
+      "createTitle": "Create New Instructor",
+      "editTitle": "Edit Instructor",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter instructor name"
+    },
+    "created": "Instructor created successfully",
+    "updated": "Instructor updated successfully",
+    "deleted": "Instructor deleted successfully",
+    "loadError": "Error loading instructors",
+    "saveError": "Failed to save instructor"
+  },
+  "activities": {
+    "title": "Activities",
+    "list": {
+      "title": "Activities List",
+      "createNew": "Create New Activity"
+    },
+    "form": {
+      "createTitle": "Create New Activity",
+      "editTitle": "Edit Activity",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter activity name"
+    },
+    "created": "Activity created successfully",
+    "updated": "Activity updated successfully",
+    "deleted": "Activity deleted successfully",
+    "loadError": "Error loading activities",
+    "saveError": "Failed to save activity"
+  },
+  "contactPersons": {
+    "title": "Contact Persons",
+    "list": {
+      "title": "Contact Persons List",
+      "createNew": "Create New Contact Person"
+    },
+    "form": {
+      "createTitle": "Create New Contact Person",
+      "editTitle": "Edit Contact Person",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter name"
+    },
+    "created": "Contact person created successfully",
+    "updated": "Contact person updated successfully",
+    "deleted": "Contact person deleted successfully",
+    "loadError": "Error loading contact persons",
+    "saveError": "Failed to save contact person"
+  },
+  "users": {
+    "title": "Users",
+    "list": {
+      "title": "Users List",
+      "createNew": "Create New User"
+    },
+    "form": {
+      "createTitle": "Create New User",
+      "editTitle": "Edit User",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter email address"
+    },
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully",
+    "loadError": "Error loading users",
+    "saveError": "Failed to save user"
+  },
+  "priceLists": {
+    "title": "Price Lists",
+    "service": {
+      "title": "Service Prices",
+      "list": {
+        "title": "Service Price Lists",
+        "createNew": "Create New Service Price List"
+      },
+      "form": {
+        "createTitle": "Create New Service Price List",
+        "editTitle": "Edit Service Price List"
+      },
+      "created": "Service price list created successfully",
+      "updated": "Service price list updated successfully",
+      "deleted": "Service price list deleted successfully",
+      "loadError": "Error loading service price lists",
+      "saveError": "Failed to save service price list"
+    },
+    "activity": {
+      "title": "Activity Prices",
+      "list": {
+        "title": "Activity Price Lists",
+        "createNew": "Create New Activity Price List"
+      },
+      "form": {
+        "createTitle": "Create New Activity Price List",
+        "editTitle": "Edit Activity Price List"
+      },
+      "created": "Activity price list created successfully",
+      "updated": "Activity price list updated successfully",
+      "deleted": "Activity price list deleted successfully",
+      "loadError": "Error loading activity price lists",
+      "saveError": "Failed to save activity price list"
+    },
+    "individualService": {
+      "title": "Individual Service Prices",
+      "list": {
+        "title": "Individual Service Prices",
+        "createNew": "Create New Individual Service Price"
+      },
+      "form": {
+        "createTitle": "Create New Individual Service Price List",
+        "editTitle": "Edit Individual Service Price List"
+      },
+      "created": "Individual service price list created successfully",
+      "updated": "Individual service price list updated successfully",
+      "deleted": "Individual service price list deleted successfully",
+      "loadError": "Error loading individual service price lists",
+      "saveError": "Failed to save individual service price list"
+    },
+    "individualActivity": {
+      "title": "Individual Activity Prices",
+      "list": {
+        "title": "Individual Activity Prices",
+        "createNew": "Create New Individual Activity Price"
+      },
+      "form": {
+        "createTitle": "Create New Individual Activity Price List",
+        "editTitle": "Edit Individual Activity Price List"
+      },
+      "created": "Individual activity price list created successfully",
+      "updated": "Individual activity price list updated successfully",
+      "deleted": "Individual activity price list deleted successfully",
+      "loadError": "Error loading individual activity price lists",
+      "saveError": "Failed to save individual activity price list"
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "list": {
+      "title": "Payments List",
+      "createNew": "Create New Payment"
+    },
+    "form": {
+      "createTitle": "Create New Payment",
+      "editTitle": "Edit Payment"
+    },
+    "created": "Payment created successfully",
+    "updated": "Payment updated successfully",
+    "deleted": "Payment deleted successfully",
+    "loadError": "Error loading payments",
+    "saveError": "Failed to save payment",
+    "paymentDate": "Payment Date",
+    "paymentDateRequired": "Payment date is required"
+  },
+  "balances": {
+    "title": "Balances",
+    "list": {
+      "title": "Balances List",
+      "createNew": "Create New Balance"
+    },
+    "form": {
+      "createTitle": "Create New Balance",
+      "editTitle": "Edit Balance"
+    },
+    "created": "Balance created successfully",
+    "updated": "Balance updated successfully",
+    "deleted": "Balance deleted successfully",
+    "loadError": "Error loading balances",
+    "saveError": "Failed to save balance"
+  },
+  "roles": {
+    "title": "Roles",
+    "list": {
+      "title": "Roles List"
+    },
+    "loadError": "Error loading roles"
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info"
+  }
+}
+
