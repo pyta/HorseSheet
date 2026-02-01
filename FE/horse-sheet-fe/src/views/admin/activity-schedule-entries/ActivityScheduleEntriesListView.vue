@@ -141,7 +141,10 @@ async function handleDelete(id: string) {
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">{{ t('schedule.entries.title') }}</h2>
-        <router-link to="/admin/activity-schedule-entries/new" class="btn btn-primary">{{ t('schedule.entries.createNew') }}</router-link>
+        <router-link to="/admin/activity-schedule-entries/new" class="btn btn-primary add-button">
+          <span class="add-icon">+</span>
+          <span class="add-label">{{ t('common.buttons.add') }}</span>
+        </router-link>
       </div>
       <div v-if="loading" class="loading"><div class="spinner"></div></div>
       <div v-else>
@@ -204,8 +207,8 @@ async function handleDelete(id: string) {
                   </div>
                 </div>
                 <div class="tile-actions">
-                  <router-link :to="`/admin/activity-schedule-entries/${entry.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-                  <button class="btn btn-danger btn-sm" @click="handleDelete(entry.id)">Delete</button>
+                  <router-link :to="`/admin/activity-schedule-entries/${entry.id}`" class="btn btn-secondary btn-sm">{{ t('common.buttons.edit') }}</router-link>
+                  <button class="btn btn-danger btn-sm" @click="handleDelete(entry.id)">{{ t('common.buttons.delete') }}</button>
                 </div>
               </div>
             </div>
@@ -340,6 +343,28 @@ async function handleDelete(id: string) {
     text-align: center;
     padding: 2rem;
     color: #7f8c8d;
+  }
+}
+
+.add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.add-label {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .add-label {
+    display: none;
   }
 }
 </style>

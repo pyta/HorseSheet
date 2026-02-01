@@ -378,6 +378,7 @@ const menuItems = computed(() => [
   margin-left: 250px;
   padding: 2rem;
   height: 100vh;
+  overflow-y: auto;
 }
 
 /* Mobile styles */
