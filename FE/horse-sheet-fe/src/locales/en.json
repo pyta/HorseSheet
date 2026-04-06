@@ -126,7 +126,14 @@
   "dashboard": {
     "title": "Admin Dashboard",
     "subtitle": "Welcome to the HorseSheet admin panel",
-    "quickLinks": "Quick Links"
+    "quickLinks": "Quick Links",
+    "roles": {
+      "admin": "Administrator",
+      "stableOwner": "Stable Owner",
+      "stableManager": "Stable Manager",
+      "user": "User"
+    },
+    "userOnlyMessage": "Use the menu to view schedules and your activities."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -154,6 +161,8 @@
       "subtitle": "Sign in to your account",
       "emailLabel": "Email",
       "emailPlaceholder": "Enter your email",
+      "loginLabel": "Email or user number",
+      "loginPlaceholder": "Email or 6-digit user number",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Enter your password",
       "signIn": "Sign in",
@@ -164,6 +173,10 @@
   },
   "validation": {
     "required": "This field is required",
+    "login": {
+      "required": "Email or user number is required",
+      "invalid": "Enter a valid email address or 6-digit user number"
+    },
     "email": {
       "required": "Email is required",
       "invalid": "Please enter a valid email address"
@@ -413,8 +426,11 @@
     "form": {
       "createTitle": "Create New User",
       "editTitle": "Edit User",
+      "userNumber": "User number",
       "emailLabel": "Email",
-      "emailPlaceholder": "Enter email address"
+      "emailPlaceholder": "Enter email address",
+      "stableAccess": "Stable access",
+      "noStables": "No stables available"
     },
     "created": "User created successfully",
     "updated": "User updated successfully",

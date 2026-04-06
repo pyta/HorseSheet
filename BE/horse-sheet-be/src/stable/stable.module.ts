@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StableService } from './stable.service';
 import { StableController } from './stable.controller';
 import { Stable } from './entities/stable.entity';
+import { UserStable } from './entities/user-stable.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Stable])],
+  imports: [TypeOrmModule.forFeature([Stable, UserStable])],
   controllers: [StableController],
   providers: [StableService],
   exports: [StableService],

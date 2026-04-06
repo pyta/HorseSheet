@@ -12,21 +12,26 @@ const authStore = useAuthStore();
 const uiStore = useUIStore();
 const { t } = useI18n();
 
-const email = ref('');
+const login = ref('');
 const password = ref('');
 const isLoading = ref(false);
-const errors = ref<{ email?: string; password?: string; general?: string }>({});
+const errors = ref<{ login?: string; password?: string; general?: string }>({});
 
 const validate = (): boolean => {
   errors.value = {};
   let isValid = true;
 
-  if (!email.value) {
-    errors.value.email = t('validation.email.required');
+  if (!login.value.trim()) {
+    errors.value.login = t('validation.login.required');
     isValid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = t('validation.email.invalid');
-    isValid = false;
+  } else {
+    const trimmed = login.value.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    const isUserNumber = /^\d{6}$/.test(trimmed);
+    if (!isEmail && !isUserNumber) {
+      errors.value.login = t('validation.login.invalid');
+      isValid = false;
+    }
   }
 
   if (!password.value) {
@@ -49,7 +54,7 @@ const handleSubmit = async () => {
   errors.value = {};
 
   try {
-    await authStore.login(email.value, password.value);
+    await authStore.login(login.value.trim(), password.value);
     
     // Wait for Vue reactivity to update the store
     await nextTick();
@@ -91,16 +96,17 @@ const handleSubmit = async () => {
         </div>
 
         <div class="form-group">
-          <label for="email">{{ t('auth.login.emailLabel') }}</label>
+          <label for="login">{{ t('auth.login.loginLabel') }}</label>
           <input
-            id="email"
-            v-model="email"
-            type="email"
-            :placeholder="t('auth.login.emailPlaceholder')"
+            id="login"
+            v-model="login"
+            type="text"
+            autocomplete="username"
+            :placeholder="t('auth.login.loginPlaceholder')"
             :disabled="isLoading"
-            :class="{ error: errors.email }"
+            :class="{ error: errors.login }"
           />
-          <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+          <span v-if="errors.login" class="error-message">{{ errors.login }}</span>
         </div>
 
         <div class="form-group">

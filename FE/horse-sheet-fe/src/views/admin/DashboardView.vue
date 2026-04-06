@@ -2,28 +2,69 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import ScheduleCalendar from '@/components/schedule/ScheduleCalendar.vue';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
-const quickLinks = computed(() => [
-  { name: t('navigation.stables'), path: '/admin/stables', icon: '🏠' },
-  { name: t('navigation.services'), path: '/admin/services', icon: '⚙️' },
-  { name: t('navigation.participants'), path: '/admin/participants', icon: '👥' },
-  { name: t('navigation.activities'), path: '/admin/activities', icon: '🏇' },
-  { name: t('navigation.serviceSchedule'), path: '/admin/service-schedule-entries', icon: '📅' },
-  { name: t('navigation.activitySchedule'), path: '/admin/activity-schedule-entries', icon: '📆' },
-  { name: t('navigation.payments'), path: '/admin/payments', icon: '💸' },
-  { name: t('navigation.balances'), path: '/admin/balances', icon: '💵' },
-]);
+const allQuickLinks = [
+  { nameKey: 'navigation.stables', path: '/admin/stables', icon: '🏠', roles: ['admin', 'stable_owner'] },
+  { nameKey: 'navigation.services', path: '/admin/services', icon: '⚙️', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.contactPersons', path: '/admin/contact-persons', icon: '👤', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.participants', path: '/admin/participants', icon: '👥', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.instructors', path: '/admin/instructors', icon: '🎓', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.activities', path: '/admin/activities', icon: '🏇', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.serviceSchedule', path: '/admin/service-schedule-entries', icon: '📅', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.activitySchedule', path: '/admin/activity-schedule-entries', icon: '📆', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.servicePrices', path: '/admin/service-price-lists', icon: '💰', roles: ['admin', 'stable_owner'] },
+  { nameKey: 'navigation.activityPrices', path: '/admin/activity-price-lists', icon: '💵', roles: ['admin', 'stable_owner'] },
+  { nameKey: 'navigation.individualServicePrices', path: '/admin/individual-service-price-lists', icon: '💳', roles: ['admin', 'stable_owner'] },
+  { nameKey: 'navigation.individualActivityPrices', path: '/admin/individual-activity-price-lists', icon: '💴', roles: ['admin', 'stable_owner'] },
+  { nameKey: 'navigation.payments', path: '/admin/payments', icon: '💸', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.balances', path: '/admin/balances', icon: '💵', roles: ['admin', 'stable_owner', 'stable_manager'] },
+  { nameKey: 'navigation.users', path: '/admin/users', icon: '👥', roles: ['admin', 'stable_owner'] },
+  { nameKey: 'navigation.roles', path: '/admin/roles', icon: '🔐', roles: ['admin'] },
+];
+
+const quickLinks = computed(() => {
+  const roles = authStore.user?.roles ?? [];
+  if (roles.includes('admin')) {
+    return allQuickLinks.map((link) => ({ name: t(link.nameKey), path: link.path, icon: link.icon }));
+  }
+  if (roles.length === 0) {
+    return [];
+  }
+  return allQuickLinks
+    .filter((link) => link.roles.some((r) => roles.includes(r)))
+    .map((link) => ({ name: t(link.nameKey), path: link.path, icon: link.icon }));
+});
+
+const roleLabel = computed(() => {
+  const roles = authStore.user?.roles ?? [];
+  if (roles.includes('admin')) return t('dashboard.roles.admin');
+  if (roles.includes('stable_owner')) return t('dashboard.roles.stableOwner');
+  if (roles.includes('stable_manager')) return t('dashboard.roles.stableManager');
+  if (roles.includes('user')) return t('dashboard.roles.user');
+  return '';
+});
+
+const showQuickLinks = computed(() => quickLinks.value.length > 0);
+const showSchedule = computed(() => {
+  const roles = authStore.user?.roles ?? [];
+  return roles.includes('admin') || roles.includes('stable_owner') || roles.includes('stable_manager') || roles.includes('user');
+});
 </script>
 
 <template>
   <div class="dashboard">
     <h1>{{ t('dashboard.title') }}</h1>
-    <p class="subtitle">{{ t('dashboard.subtitle') }}</p>
+    <p class="subtitle">
+      {{ t('dashboard.subtitle') }}
+      <span v-if="roleLabel" class="role-badge">{{ roleLabel }}</span>
+    </p>
 
-    <div class="quick-links">
+    <div v-if="showQuickLinks" class="quick-links">
       <h2>{{ t('dashboard.quickLinks') }}</h2>
       <div class="links-grid">
         <RouterLink
@@ -38,8 +79,12 @@ const quickLinks = computed(() => [
       </div>
     </div>
 
-    <div class="schedule-section">
+    <div v-if="showSchedule" class="schedule-section">
       <ScheduleCalendar />
+    </div>
+
+    <div v-if="!showQuickLinks && showSchedule" class="dashboard-user-only">
+      <p class="user-message">{{ t('dashboard.userOnlyMessage') }}</p>
     </div>
   </div>
 </template>
@@ -103,5 +148,25 @@ const quickLinks = computed(() => [
 
 .schedule-section {
   margin-top: 3rem;
+}
+
+.role-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2c3e50;
+  background: #ecf0f1;
+  border-radius: 6px;
+}
+
+.dashboard-user-only {
+  margin-top: 1.5rem;
+}
+
+.user-message {
+  color: #7f8c8d;
+  font-size: 1rem;
 }
 </style>

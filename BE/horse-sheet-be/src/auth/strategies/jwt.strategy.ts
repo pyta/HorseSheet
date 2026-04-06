@@ -23,12 +23,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user || !user.isActive) {
       return null;
     }
-    // Use roles from token payload (they're already there from login)
-    // This avoids DB lookup on every request for better performance
+    // Use roles and stableIds from token payload (set at login/refresh)
     return {
       userId: payload.sub,
       email: payload.email,
       roles: payload.roles || [],
+      stableIds: payload.stableIds || [],
     };
   }
 }

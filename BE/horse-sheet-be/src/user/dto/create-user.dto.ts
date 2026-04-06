@@ -46,5 +46,15 @@ export class CreateUserDto {
   @IsUUID('4', { each: true })
   @IsOptional()
   roleIds?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Stable IDs to grant access to (user_stables)',
+    type: [String],
+    example: ['uuid-1', 'uuid-2'],
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  stableIds?: string[];
 }
 

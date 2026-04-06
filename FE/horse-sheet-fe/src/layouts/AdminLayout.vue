@@ -77,25 +77,31 @@ const handleLogout = async () => {
   }
 };
 
-const menuItems = computed(() => [
-  { name: t('navigation.dashboard'), path: '/admin', icon: '📊' },
-  { name: t('navigation.stables'), path: '/admin/stables', icon: '🏠' },
-  { name: t('navigation.services'), path: '/admin/services', icon: '⚙️' },
-  { name: t('navigation.contactPersons'), path: '/admin/contact-persons', icon: '👤' },
-  { name: t('navigation.participants'), path: '/admin/participants', icon: '👥' },
-  { name: t('navigation.instructors'), path: '/admin/instructors', icon: '🎓' },
-  { name: t('navigation.activities'), path: '/admin/activities', icon: '🏇' },
-  { name: t('navigation.serviceSchedule'), path: '/admin/service-schedule-entries', icon: '📅' },
-  { name: t('navigation.activitySchedule'), path: '/admin/activity-schedule-entries', icon: '📆' },
-  { name: t('navigation.servicePrices'), path: '/admin/service-price-lists', icon: '💰' },
-  { name: t('navigation.activityPrices'), path: '/admin/activity-price-lists', icon: '💵' },
-  { name: t('navigation.individualServicePrices'), path: '/admin/individual-service-price-lists', icon: '💳' },
-  { name: t('navigation.individualActivityPrices'), path: '/admin/individual-activity-price-lists', icon: '💴' },
-  { name: t('navigation.payments'), path: '/admin/payments', icon: '💸' },
-  { name: t('navigation.balances'), path: '/admin/balances', icon: '💵' },
-  { name: t('navigation.users'), path: '/admin/users', icon: '👥' },
-  { name: t('navigation.roles'), path: '/admin/roles', icon: '🔐' },
-]);
+const menuItems = computed(() => {
+  const all = [
+    { name: t('navigation.dashboard'), path: '/admin', icon: '📊', roles: ['admin', 'stable_owner', 'stable_manager', 'user'] },
+    { name: t('navigation.stables'), path: '/admin/stables', icon: '🏠', roles: ['admin', 'stable_owner'] },
+    { name: t('navigation.services'), path: '/admin/services', icon: '⚙️', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.contactPersons'), path: '/admin/contact-persons', icon: '👤', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.participants'), path: '/admin/participants', icon: '👥', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.instructors'), path: '/admin/instructors', icon: '🎓', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.activities'), path: '/admin/activities', icon: '🏇', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.serviceSchedule'), path: '/admin/service-schedule-entries', icon: '📅', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.activitySchedule'), path: '/admin/activity-schedule-entries', icon: '📆', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.servicePrices'), path: '/admin/service-price-lists', icon: '💰', roles: ['admin', 'stable_owner'] },
+    { name: t('navigation.activityPrices'), path: '/admin/activity-price-lists', icon: '💵', roles: ['admin', 'stable_owner'] },
+    { name: t('navigation.individualServicePrices'), path: '/admin/individual-service-price-lists', icon: '💳', roles: ['admin', 'stable_owner'] },
+    { name: t('navigation.individualActivityPrices'), path: '/admin/individual-activity-price-lists', icon: '💴', roles: ['admin', 'stable_owner'] },
+    { name: t('navigation.payments'), path: '/admin/payments', icon: '💸', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.balances'), path: '/admin/balances', icon: '💵', roles: ['admin', 'stable_owner', 'stable_manager'] },
+    { name: t('navigation.users'), path: '/admin/users', icon: '👥', roles: ['admin', 'stable_owner'] },
+    { name: t('navigation.roles'), path: '/admin/roles', icon: '🔐', roles: ['admin'] },
+  ];
+  const roles = authStore.user?.roles ?? [];
+  if (roles.includes('admin')) return all;
+  if (roles.length === 0) return all.filter((item) => item.path === '/admin');
+  return all.filter((item) => item.roles.some((r) => roles.includes(r)));
+});
 </script>
 
 <template>

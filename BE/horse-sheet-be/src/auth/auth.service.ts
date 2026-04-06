@@ -12,6 +12,7 @@ import { User } from './entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Role } from './entities/role.entity';
 import { UserRole } from './entities/user-role.entity';
+import { UserStable } from '../stable/entities/user-stable.entity';
 
 @Injectable()
 export class AuthService {
@@ -24,13 +25,20 @@ export class AuthService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(UserRole)
     private readonly userRoleRepository: Repository<UserRole>,
+    @InjectRepository(UserStable)
+    private readonly userStableRepository: Repository<UserStable>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  /** Validate by email or 6-digit user number */
+  async validateUser(login: string, password: string): Promise<any> {
+    const trimmed = login.trim();
+    const isUserNumber = /^\d{6}$/.test(trimmed);
     const user = await this.userRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: isUserNumber
+        ? { userNumber: trimmed }
+        : { email: trimmed.toLowerCase() },
       relations: ['userRoles', 'userRoles.role'],
     });
 
@@ -55,11 +63,13 @@ export class AuthService {
 
   async login(user: User, ip?: string, userAgent?: string) {
     const roles = user.userRoles?.map((ur) => ur.role?.code) || [];
+    const stableIds = await this.getStableIdsForUser(user.id);
 
     const payload = {
       sub: user.id,
       email: user.email,
       roles,
+      stableIds,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -102,11 +112,13 @@ export class AuthService {
     // Generate new tokens
     const user = refreshToken.user;
     const roles = user.userRoles?.map((ur) => ur.role?.code) || [];
+    const stableIds = await this.getStableIdsForUser(user.id);
 
     const payload = {
       sub: user.id,
       email: user.email,
       roles,
+      stableIds,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -162,6 +174,14 @@ export class AuthService {
     await this.refreshTokenRepository.save(refreshToken);
 
     return refreshTokenValue;
+  }
+
+  async getStableIdsForUser(userId: string): Promise<string[]> {
+    const rows = await this.userStableRepository.find({
+      where: { userId },
+      select: ['stableId'],
+    });
+    return rows.map((r) => r.stableId);
   }
 
   private hashToken(token: string): string {

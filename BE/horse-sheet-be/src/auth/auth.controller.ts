@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   UseGuards,
   Req,
@@ -10,7 +11,7 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from '../common/decorators/public.decorator';
@@ -18,6 +19,13 @@ import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
+
+export interface MeResponse {
+  userId: string;
+  email: string;
+  roles: string[];
+  stableIds: string[];
+}
 
 @ApiTags('auth')
 @Controller('auth')
@@ -174,6 +182,19 @@ export class AuthController {
     res.cookie('rt', newRefreshToken, cookieOptions);
 
     return { accessToken };
+  }
+
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user (roles and stableIds)' })
+  @ApiResponse({ status: 200, description: 'Current user info' })
+  async me(@CurrentUser() user: { userId: string; email: string; roles: string[]; stableIds: string[] }): Promise<MeResponse> {
+    return {
+      userId: user.userId,
+      email: user.email,
+      roles: user.roles || [],
+      stableIds: user.stableIds || [],
+    };
   }
 
   @Post('logout')

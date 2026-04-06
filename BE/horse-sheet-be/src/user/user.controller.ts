@@ -23,7 +23,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 @ApiBearerAuth()
 @Controller('users')
 @UseGuards(RolesGuard)
-@Roles('admin')
+@Roles('admin', 'stable_owner')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

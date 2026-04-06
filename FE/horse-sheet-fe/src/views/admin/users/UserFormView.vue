@@ -4,8 +4,9 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { userService } from '@/services/user.service';
 import { roleService } from '@/services/role.service';
+import { stableService } from '@/services/stable.service';
 import { useUIStore } from '@/stores/ui';
-import type { User, CreateUserDto, UpdateUserDto, Role } from '@/types';
+import type { User, CreateUserDto, UpdateUserDto, Role, Stable } from '@/types';
 
 const router = useRouter();
 const route = useRoute();
@@ -16,25 +17,37 @@ const isEdit = computed(() => !!route.params.id);
 const loading = ref(false);
 const submitting = ref(false);
 const roles = ref<Role[]>([]);
+const stables = ref<Stable[]>([]);
+const userNumber = ref<string | undefined>(undefined);
 
-const form = ref<CreateUserDto>({
+const form = ref<CreateUserDto & { stableIds?: string[] }>({
   email: '',
   password: '',
   firstName: '',
   lastName: '',
   isActive: true,
   roleIds: [],
+  stableIds: [],
 });
 
 const version = ref<number | undefined>(undefined);
 const errors = ref<Record<string, string>>({});
 
 onMounted(async () => {
-  await loadRoles();
+  await Promise.all([loadRoles(), loadStables()]);
   if (isEdit.value) {
     await loadUser();
   }
 });
+
+async function loadStables() {
+  try {
+    const data = await stableService.findAll();
+    stables.value = Array.isArray(data) ? data : [];
+  } catch {
+    stables.value = [];
+  }
+}
 
 async function loadRoles() {
   try {
@@ -50,6 +63,7 @@ async function loadUser() {
   try {
     loading.value = true;
     const user = await userService.findOne(route.params.id as string);
+    userNumber.value = user.userNumber;
     form.value = {
       email: user.email,
       password: '', // Don't load password
@@ -57,6 +71,7 @@ async function loadUser() {
       lastName: user.lastName || '',
       isActive: user.isActive ?? true,
       roleIds: user.roles?.map((r) => r.id) || [],
+      stableIds: user.stableIds ?? [],
     };
     version.value = user.version;
   } catch (error: any) {
@@ -113,6 +128,7 @@ async function handleSubmit() {
         lastName: form.value.lastName || null,
         isActive: form.value.isActive,
         roleIds: form.value.roleIds,
+        stableIds: form.value.stableIds,
         version: version.value,
       };
       // Only include password if it was provided
@@ -160,6 +176,22 @@ function toggleRole(roleId: string) {
 function isRoleSelected(roleId: string): boolean {
   return form.value.roleIds?.includes(roleId) || false;
 }
+
+function toggleStable(stableId: string) {
+  if (!form.value.stableIds) {
+    form.value.stableIds = [];
+  }
+  const index = form.value.stableIds.indexOf(stableId);
+  if (index > -1) {
+    form.value.stableIds.splice(index, 1);
+  } else {
+    form.value.stableIds.push(stableId);
+  }
+}
+
+function isStableSelected(stableId: string): boolean {
+  return form.value.stableIds?.includes(stableId) || false;
+}
 </script>
 
 <template>
@@ -175,6 +207,17 @@ function isRoleSelected(roleId: string): boolean {
       </div>
 
       <form v-else @submit.prevent="handleSubmit">
+        <div v-if="isEdit && userNumber" class="form-group">
+          <label class="form-label">{{ t('users.form.userNumber') }}</label>
+          <input
+            :value="userNumber"
+            type="text"
+            class="form-input"
+            readonly
+            disabled
+          />
+        </div>
+
         <div class="form-group">
           <label class="form-label required" for="email">{{ t('common.labels.email') }}</label>
           <input
@@ -259,6 +302,26 @@ function isRoleSelected(roleId: string): boolean {
               </div>
             </label>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ t('users.form.stableAccess') }}</label>
+          <div class="roles-list">
+            <label
+              v-for="stable in stables"
+              :key="stable.id"
+              class="role-checkbox"
+              :class="{ selected: isStableSelected(stable.id) }"
+            >
+              <input
+                type="checkbox"
+                :checked="isStableSelected(stable.id)"
+                @change="toggleStable(stable.id)"
+              />
+              <span class="role-name">{{ stable.name }}</span>
+            </label>
+          </div>
+          <p v-if="!stables.length" class="form-hint">{{ t('users.form.noStables') }}</p>
         </div>
 
         <div class="form-actions">

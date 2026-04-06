@@ -8,15 +8,21 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ContactPersonService } from './contact-person.service';
 import { CreateContactPersonDto } from './dto/create-contact-person.dto';
 import { UpdateContactPersonDto } from './dto/update-contact-person.dto';
 import { ContactPerson } from './entities/contact-person.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('contact-persons')
+@ApiBearerAuth()
 @Controller('contact-persons')
+@UseGuards(RolesGuard)
+@Roles('admin', 'stable_owner', 'stable_manager')
 export class ContactPersonController {
   constructor(
     private readonly contactPersonService: ContactPersonService,

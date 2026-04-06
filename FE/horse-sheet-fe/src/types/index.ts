@@ -300,11 +300,13 @@ export interface UpdateBalanceDto extends Partial<CreateBalanceDto> {
 
 // User
 export interface User extends BaseEntity {
+  userNumber?: string;
   email: string;
   firstName?: string | null;
   lastName?: string | null;
   isActive: boolean;
   roles?: Role[];
+  stableIds?: string[];
 }
 
 export interface CreateUserDto {
@@ -314,12 +316,14 @@ export interface CreateUserDto {
   lastName?: string | null;
   isActive?: boolean;
   roleIds?: string[];
+  stableIds?: string[];
 }
 
 export interface UpdateUserDto extends Partial<Omit<CreateUserDto, 'password'>> {
   password?: string;
   version?: number;
   roleIds?: string[];
+  stableIds?: string[];
 }
 
 // Role

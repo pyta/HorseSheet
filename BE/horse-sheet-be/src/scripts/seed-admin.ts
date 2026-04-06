@@ -59,11 +59,24 @@ async function seedAdmin() {
       return;
     }
 
-    // Create admin user
+    // Create admin user (with unique 6-digit user number)
     const defaultPassword = process.env.ADMIN_PASSWORD || 'Admin123!';
     const passwordHash = await bcrypt.hash(defaultPassword, 12);
+    let userNumber = '';
+    for (let i = 0; i < 100; i++) {
+      const num = String(Math.floor(100000 + Math.random() * 900000));
+      const existing = await userRepository.findOne({ where: { userNumber: num } });
+      if (!existing) {
+        userNumber = num;
+        break;
+      }
+    }
+    if (!userNumber) {
+      throw new Error('Could not generate unique user number');
+    }
 
     const adminUser = userRepository.create({
+      userNumber,
       email: adminEmail,
       passwordHash,
       firstName: 'Admin',

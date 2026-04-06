@@ -8,15 +8,21 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ActivityScheduleEntryService } from './activity-schedule-entry.service';
 import { CreateActivityScheduleEntryDto } from './dto/create-activity-schedule-entry.dto';
 import { UpdateActivityScheduleEntryDto } from './dto/update-activity-schedule-entry.dto';
 import { ActivityScheduleEntry } from './entities/activity-schedule-entry.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('activity-schedule-entries')
+@ApiBearerAuth()
 @Controller('activity-schedule-entries')
+@UseGuards(RolesGuard)
+@Roles('admin', 'stable_owner', 'stable_manager')
 export class ActivityScheduleEntryController {
   constructor(
     private readonly activityScheduleEntryService: ActivityScheduleEntryService,

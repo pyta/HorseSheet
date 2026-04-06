@@ -8,16 +8,21 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ActivityService } from './activity.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { Activity } from './entities/activity.entity';
-import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('activities')
+@ApiBearerAuth()
 @Controller('activities')
+@UseGuards(RolesGuard)
+@Roles('admin', 'stable_owner', 'stable_manager')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
@@ -30,8 +35,7 @@ export class ActivityController {
   }
 
   @Get()
-  @Public()
-  @ApiOperation({ summary: 'Get all activities (public)' })
+  @ApiOperation({ summary: 'Get all activities' })
   @ApiResponse({ status: 200, description: 'List of activities', type: [Activity] })
   findAll(): Promise<Activity[]> {
     return this.activityService.findAll();

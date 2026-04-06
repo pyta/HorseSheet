@@ -5,6 +5,11 @@ import { UserRole } from './user-role.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
+  /** 6-digit unique number for login (generated on creation, permanent) */
+  @Column({ type: 'varchar', length: 6, name: 'user_number', unique: true })
+  @Index('IDX_users_user_number', { unique: true })
+  userNumber: string;
+
   @Column({ type: 'varchar', length: 320 })
   @Index('IDX_users_email', { unique: true })
   email: string;

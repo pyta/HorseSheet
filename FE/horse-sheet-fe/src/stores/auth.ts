@@ -7,6 +7,7 @@ export interface User {
   userId: string;
   email: string;
   roles: string[];
+  stableIds: string[];
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -34,27 +35,27 @@ export const useAuthStore = defineStore('auth', () => {
     refreshPromise.value = null;
   }
 
-  async function login(email: string, password: string): Promise<void> {
+  async function login(loginId: string, password: string): Promise<void> {
     const response = await api.post<{ data: { accessToken: string } }>('/auth/login', {
-      email,
+      login: loginId.trim(),
       password,
     });
-    
-    // Debug: Log the full response structure
-    console.log('Login response:', response);
-    console.log('Login response.data:', response.data);
-    
-    // Check if accessToken exists in response
+
     const token = response.data?.data?.accessToken;
     if (!token) {
-      console.error('No accessToken in response. Full response:', response);
       throw new Error('Invalid response: accessToken not found');
     }
-    
+
     setAccessToken(token);
-    console.log('Token set successfully');
-    // Extract user info from token (basic implementation)
-    // In production, you might want to decode JWT or call a /me endpoint
+    await fetchMe();
+  }
+
+  async function fetchMe(): Promise<void> {
+    const response = await api.get<{ data: User }>('/auth/me');
+    const userData = response.data?.data;
+    if (userData) {
+      setUser(userData);
+    }
   }
 
   async function refreshToken(silent = false): Promise<string> {
@@ -66,9 +67,10 @@ export const useAuthStore = defineStore('auth', () => {
     isRefreshing.value = true;
     refreshPromise.value = api
       .post<{ data: { accessToken: string } }>('/auth/refresh')
-      .then((response) => {
+      .then(async (response) => {
         const newToken = response.data.data.accessToken;
         setAccessToken(newToken);
+        await fetchMe();
         return newToken;
       })
       .catch((error) => {
@@ -98,8 +100,13 @@ export const useAuthStore = defineStore('auth', () => {
 
     isInitialized.value = true;
 
-    // If we already have a token, we're good
-    if (accessToken.value) {
+    // If we already have a token, ensure we have user info (e.g. from memory after login)
+    if (accessToken.value && !user.value) {
+      try {
+        await fetchMe();
+      } catch {
+        // Ignore
+      }
       return;
     }
 
@@ -154,6 +161,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUser,
     clearAuth,
     login,
+    fetchMe,
     refreshToken,
     logout,
     initializeAuth,

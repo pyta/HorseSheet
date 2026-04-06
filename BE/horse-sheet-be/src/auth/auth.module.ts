@@ -11,12 +11,13 @@ import { User } from './entities/user.entity';
 import { Role } from './entities/role.entity';
 import { UserRole } from './entities/user-role.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { UserStable } from '../stable/entities/user-stable.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, UserRole, RefreshToken]),
+    TypeOrmModule.forFeature([User, Role, UserRole, RefreshToken, UserStable]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

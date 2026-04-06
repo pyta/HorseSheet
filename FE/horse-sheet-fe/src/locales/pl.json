@@ -126,7 +126,14 @@
   "dashboard": {
     "title": "Panel administracyjny",
     "subtitle": "Witamy w panelu administracyjnym HorseSheet",
-    "quickLinks": "Szybkie linki"
+    "quickLinks": "Szybkie linki",
+    "roles": {
+      "admin": "Administrator",
+      "stableOwner": "Właściciel stajni",
+      "stableManager": "Kierownik stajni",
+      "user": "Użytkownik"
+    },
+    "userOnlyMessage": "Użyj menu, aby przeglądać harmonogramy i swoje aktywności."
   },
   "navigation": {
     "dashboard": "Panel główny",
@@ -154,6 +161,8 @@
       "subtitle": "Zaloguj się do swojego konta",
       "emailLabel": "E-mail",
       "emailPlaceholder": "Wprowadź adres e-mail",
+      "loginLabel": "E-mail lub numer użytkownika",
+      "loginPlaceholder": "E-mail lub 6-cyfrowy numer użytkownika",
       "passwordLabel": "Hasło",
       "passwordPlaceholder": "Wprowadź hasło",
       "signIn": "Zaloguj się",
@@ -164,6 +173,10 @@
   },
   "validation": {
     "required": "To pole jest wymagane",
+    "login": {
+      "required": "E-mail lub numer użytkownika jest wymagany",
+      "invalid": "Wprowadź poprawny e-mail lub 6-cyfrowy numer użytkownika"
+    },
     "email": {
       "required": "E-mail jest wymagany",
       "invalid": "Wprowadź poprawny adres e-mail"
@@ -414,8 +427,11 @@
     "form": {
       "createTitle": "Utwórz nowego użytkownika",
       "editTitle": "Edytuj użytkownika",
+      "userNumber": "Numer użytkownika",
       "emailLabel": "E-mail",
-      "emailPlaceholder": "Wprowadź adres e-mail"
+      "emailPlaceholder": "Wprowadź adres e-mail",
+      "stableAccess": "Dostęp do stajni",
+      "noStables": "Brak dostępnych stajni"
     },
     "created": "Użytkownik utworzony pomyślnie",
     "updated": "Użytkownik zaktualizowany pomyślnie",

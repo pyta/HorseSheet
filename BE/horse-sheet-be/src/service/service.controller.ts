@@ -8,16 +8,21 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Service } from './entities/service.entity';
-import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('services')
+@ApiBearerAuth()
 @Controller('services')
+@UseGuards(RolesGuard)
+@Roles('admin', 'stable_owner', 'stable_manager')
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
@@ -30,8 +35,7 @@ export class ServiceController {
   }
 
   @Get()
-  @Public()
-  @ApiOperation({ summary: 'Get all services (public)' })
+  @ApiOperation({ summary: 'Get all services' })
   @ApiResponse({ status: 200, description: 'List of services', type: [Service] })
   findAll(): Promise<Service[]> {
     return this.serviceService.findAll();

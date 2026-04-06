@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../auth/entities/user.entity';
 import { Role } from '../auth/entities/role.entity';
 import { UserRole } from '../auth/entities/user-role.entity';
+import { UserStable } from '../stable/entities/user-stable.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -22,11 +23,13 @@ export class UserService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(UserRole)
     private readonly userRoleRepository: Repository<UserRole>,
+    @InjectRepository(UserStable)
+    private readonly userStableRepository: Repository<UserStable>,
   ) {}
 
   async create(
     createUserDto: CreateUserDto,
-  ): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[] }> {
+  ): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[]; stableIds: string[] }> {
     // Check if user with email already exists
     const existingUser = await this.userRepository.findOne({
       where: { email: createUserDto.email.toLowerCase() },
@@ -40,8 +43,11 @@ export class UserService {
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(createUserDto.password, saltRounds);
 
+    const userNumber = await this.generateUniqueUserNumber();
+
     // Create user
     const user = this.userRepository.create({
+      userNumber,
       email: createUserDto.email.toLowerCase(),
       passwordHash,
       firstName: createUserDto.firstName || null,
@@ -56,20 +62,61 @@ export class UserService {
       await this.assignRoles(savedUser.id, createUserDto.roleIds);
     }
 
+    // Assign stables if provided (SO/Admin granting access)
+    if (createUserDto.stableIds && createUserDto.stableIds.length > 0) {
+      await this.assignStables(savedUser.id, createUserDto.stableIds);
+    }
+
     // Return user with roles (transformed)
     return this.findOne(savedUser.id);
   }
 
-  async findAll(): Promise<(Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[] })[]> {
+  private async generateUniqueUserNumber(): Promise<string> {
+    const maxAttempts = 100;
+    for (let i = 0; i < maxAttempts; i++) {
+      const num = String(Math.floor(100000 + Math.random() * 900000));
+      const existing = await this.userRepository.findOne({
+        where: { userNumber: num },
+      });
+      if (!existing) return num;
+    }
+    throw new ConflictException('Could not generate unique user number');
+  }
+
+  private async assignStables(userId: string, stableIds: string[]): Promise<void> {
+    await this.userStableRepository.delete({ userId });
+    const rows = stableIds.map((stableId) =>
+      this.userStableRepository.create({ userId, stableId }),
+    );
+    if (rows.length) await this.userStableRepository.save(rows);
+  }
+
+  async findAll(): Promise<(Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[]; stableIds: string[] })[]> {
     const users = await this.userRepository.find({
       where: { deletedAt: IsNull() },
       relations: ['userRoles', 'userRoles.role'],
       order: { createdAt: 'DESC' },
     });
-    return users.map((user) => this.transformUser(user));
+    const userIds = users.map((u) => u.id);
+    const allStables = userIds.length
+      ? await this.userStableRepository.find({
+          where: { userId: In(userIds) },
+          select: ['userId', 'stableId'],
+        })
+      : [];
+    const stableIdsByUser = new Map<string, string[]>();
+    for (const row of allStables) {
+      const arr = stableIdsByUser.get(row.userId) || [];
+      arr.push(row.stableId);
+      stableIdsByUser.set(row.userId, arr);
+    }
+    return users.map((user) => ({
+      ...this.transformUser(user),
+      stableIds: stableIdsByUser.get(user.id) || [],
+    }));
   }
 
-  async findOne(id: string): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[] }> {
+  async findOne(id: string): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[]; stableIds: string[] }> {
     const user = await this.userRepository.findOne({
       where: { id, deletedAt: IsNull() },
       relations: ['userRoles', 'userRoles.role'],
@@ -79,13 +126,22 @@ export class UserService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return this.transformUser(user);
+    const stableIds = await this.getStableIdsForUser(id);
+    return { ...this.transformUser(user), stableIds };
+  }
+
+  async getStableIdsForUser(userId: string): Promise<string[]> {
+    const rows = await this.userStableRepository.find({
+      where: { userId },
+      select: ['stableId'],
+    });
+    return rows.map((r) => r.stableId);
   }
 
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
-  ): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[] }> {
+  ): Promise<Omit<User, 'passwordHash' | 'userRoles'> & { roles: Role[]; stableIds: string[] }> {
     // Fetch the full user entity (not the transformed version) for updating
     const user = await this.userRepository.findOne({
       where: { id, deletedAt: IsNull() },
@@ -137,6 +193,11 @@ export class UserService {
     // Update roles if provided
     if (updateUserDto.roleIds !== undefined) {
       await this.updateRoles(id, updateUserDto.roleIds);
+    }
+
+    // Update stables if provided
+    if (updateUserDto.stableIds !== undefined) {
+      await this.assignStables(id, updateUserDto.stableIds);
     }
 
     // Return updated user with roles

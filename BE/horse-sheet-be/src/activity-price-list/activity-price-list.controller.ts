@@ -8,15 +8,21 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ActivityPriceListService } from './activity-price-list.service';
 import { CreateActivityPriceListDto } from './dto/create-activity-price-list.dto';
 import { UpdateActivityPriceListDto } from './dto/update-activity-price-list.dto';
 import { ActivityPriceList } from './entities/activity-price-list.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('activity-price-lists')
+@ApiBearerAuth()
 @Controller('activity-price-lists')
+@UseGuards(RolesGuard)
+@Roles('admin', 'stable_owner')
 export class ActivityPriceListController {
   constructor(private readonly activityPriceListService: ActivityPriceListService) {}
 
